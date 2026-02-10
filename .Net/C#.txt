@@ -1,0 +1,83 @@
+##################### SOLID ##################
+S -> SRP Single Responsibility Principles
+O -> Open Closed principles
+L -> Liskov Substitution principles
+I -> Interface segregation principles
+D -> Dependency Inversion principles
+
+S -> Class should have single responsibility. it's not the load, overload kills the applications
+O -> Class should open for extension and closed for modifications
+L -> Parent object should be able to replace(substitute) child object seamlessly
+I -> Segregating the interfaces based on the requirement and it shows only those methods required to the client.
+D -> Higher module should not depends on lower module.
+
+
+Delegates -> Pointer to a functions, used for call back. We used parallel programming where subscribers are waiting for the result. publisher-subcriber model
+Events -> are encapsulation over delegates, to avoid tampering the delegates subscribers we use events
+
+
+Abstraction -> show what is neccessary
+Encapsulation -> Hides the complexity
+Polymorphism -> object can acts differently on different conditions
+Inheritance -> new class derives from existing class, which new classes reuses the existing class
+
+Abstraction happens during the design phase 
+during execution or coding phase, developer implements encapsulation through abstraction
+
+encapsulation implements abstraction. encapsulation and abstraction compliments each other.
+
+Virtual keyword used to allow a method,property, indexer or event in a base class tobe overriden in child class.
+
+Method overloading means same method name with different signature in the same class.
+
+
+Polymorphism -> ability of an object to act differently under different conditions. Implement polymorphism Inheritance a must required.
+
+2 polymorphism
+1. static (compile) -> method overloading
+2. dynamic (runtime) -> method overriding
+
+operator overloading -> allows us to define how operatos behaves on a classes.
+
+ public static Box operator +(Box b1, Box b2)
+    {
+        return new Box(b1.Width + b2.Width);
+    }
+	
+Abstract class is partially defined parent class, can't create instance through inheritance 
+
+public abstract class eventsdelegates
+{
+    public abstract decimal CalculateDiscount();
+}
+
+public class Class1 : eventsdelegates
+{
+    public override decimal CalculateDiscount()
+    {
+        return 10;
+    }
+}
+
+
+abstract method inside abstract class are virtual. abstract method implementation in child class is compulsory.
+
+virtual methods overriding is optional.
+
+Interface -> is a contract, allows multiple inheritance. all interface members are public and do not have implementation or logic. can't create instance of inetrfaces
+
+We will have better control on the impact analysis, change management.
+
+We can handle changes in interface through multiple inheritance.
+
+Multiple inheritance helps to add new methods without affecting the old inetrfaces.
+
+
+Constructor with Inheritance ->
+
+first executes Child Initializers -> then Parent Initializers -> then Parent Constructor -> last Child Constructor
+
+when we have static constructor then ->  first child static constructor -> then parent static constructor -> then parent public constructor -> then child constructor
+
+static constructor executes once
+

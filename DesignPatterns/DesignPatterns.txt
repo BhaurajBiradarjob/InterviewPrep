@@ -1,0 +1,61 @@
+Factory
+Abstract Factory
+Singleton
+Solid Principles
+Template
+Bridge
+Decorator
+Iterator
+Lazy Loading
+Composite
+IoC
+
+
+Singleton : Only ONE instance of a class exists in the entire application, and it provides a global access point to that instance. Single source of truth.
+Singleton vs Static -> private constructor, thread safe, lazy loading, single instance, instance management, wrapper over static -> singleton
+singleton use -> caching the data, unneccessarily connecting to database. Single source of logics
+Singleton objects are protected, they can't be destroyed outside. -> Singleton objects are encapsulated.
+Singleton objects are lazy loaded. 
+It is sealed means class can't be inheritaed.
+Controls the instance creation.
+
+Factory : loosely coupled ( when we change code at one place, I do not have to make changes at many places). Create objects without exposing the object creation logic to the client.
+concrete class - means implemented class
+clients should not directly contact with concrete class, to improve abstraction create an interface.
+
+Factory Pattern defines an interface for creating objects but lets subclasses decide which class to instantiate. gives one object.
+
+to achieve this Dependency injection.
+
+Abstract factory : Create families of related objects without specifying their concrete classes. simple words Factory of factories. gives family of objects.
+
+
+Lazy loading : On demand loading. Do not load an object until it is actually needed.
+Why do we need Lazy Loading?
+
+✔ Improves performance
+✔ Saves memory
+✔ Reduces unnecessary DB calls
+✔ Faster startup time
+
+Template Pattern : subclasses override specific steps without changing the overall structure.
+Template Pattern defines the skeleton of an algorithm and allows subclasses to redefine certain steps without changing the algorithm’s structure.
+
+Q1: Why use Template Pattern?
+Answer:
+To define a common algorithm structure while allowing subclasses to customize specific steps.
+
+Q2: Can template method be overridden?
+Answer:
+No. It should not be overridden; only its internal steps should be customized.
+
+Q3: Is Template Pattern used in ASP.NET?
+Answer:
+Yes. ASP.NET pipeline follows a template-like flow where developers override specific lifecycle methods.
+
+
+Composite : Composite Pattern allows clients to treat individual objects and compositions of objects uniformly. 
+Treat a group of objects the same way as a single object. 
+compose objects in tree structure to represent part-whole hierarchies(objects can be part of each other).
+
+ 

@@ -1,0 +1,1822 @@
+
+Componenets : UI. It is a self contained unit that knows how to display itself and how to behave when user interact with it.
+It contains
+html file -> UI template, seen on screen
+css file -> styles used for UI template or component
+ts file (typescript) -> logic and data for the component
+
+BootStrapping process : 
+1. Browser loads index.html
+2. main.ts Script loads and runs
+3. main.ts bootstraps AppComponent
+4. Angular replaces <app-root>  with AppComponent
+5. AppComponent renders
+
+Routing : Showing different pages/components based on the URL, without reloading the page.
+
+Ex:
+/login      → LoginComponent
+/home       → HomeComponent
+/products   → ProductsComponent
+
+Browser URL
+   ↓
+Angular Router
+   ↓
+Which component to show
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { HomeComponent } from './home/home.component';
+import { LoginComponent } from './login/login.component';
+
+const routes: Routes = [
+  { path: 'home', component: HomeComponent },
+  { path: 'login', component: LoginComponent }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+
+| Term        | Meaning                    |
+| ----------- | -------------------------- |
+| `Routes`    | Array of route definitions |
+| `path`      | URL part                   |
+| `component` | Component to show          |
+| `forRoot()` | Main routing config        |
+
+<router-outlet></router-outlet> 👉 This is where Angular loads routed components.
+
+Using routerLink :
+<a routerLink="/home">Home</a>
+<a routerLink="/login">Login</a>
+With parameters:
+<a [routerLink]="['/product', 10]">View</a>
+
+Navigate using TypeScript
+import { Router } from '@angular/router';
+
+constructor(private router: Router) {}
+
+goToHome() {
+  this.router.navigate(['/home']);
+}
+
+Default Route & Redirects
+Default route : { path: '', redirectTo: 'home', pathMatch: 'full' }
+Wildcard (404 page) : { path: '**', component: PageNotFoundComponent }
+Always keep wildcard last
+
+Route Parameters
+URL: /product/101
+Route config : { path: 'product/:id', component: ProductComponent }
+Read parameter : 
+import { ActivatedRoute } from '@angular/router';
+
+constructor(private route: ActivatedRoute) {}
+
+ngOnInit() {
+  const id = this.route.snapshot.paramMap.get('id');
+}
+
+
+🔒 8. Route Guards (Security) : Used to allow/deny navigation
+Types of Guards
+| Guard           | Purpose                 |
+| --------------- | ----------------------- |
+| `CanActivate`   | Protect route           |
+| `CanDeactivate` | Prevent leaving         |
+| `Resolve`       | Preload data            |
+| `CanLoad`       | Lazy loading protection |
+
+10. Child Routes (Nested Routing)
+URL: /admin/users
+/admin/settings
+
+{
+  path: 'admin',
+  component: AdminComponent,
+  children: [
+    { path: 'users', component: UsersComponent },
+    { path: 'settings', component: SettingsComponent }
+  ]
+}
+
+| Question                             | Key Point          |
+| ------------------------------------ | ------------------ |
+| Difference between routerLink & href | SPA vs reload      |
+| forRoot vs forChild                  | Root vs feature    |
+| snapshot vs subscribe                | Static vs reactive |
+| CanActivate vs CanLoad               | Route vs module    |
+| Lazy loading benefit                 | Performance        |
+
+
+What are Guards in Angular? 
+Guards decide whether a route navigation should happen or not.
+
+Before Angular changes the URL and loads a component, it asks guards:
+
+👉 “Is this navigation allowed?”
+
+If guard says:
+
+✅ true → navigation happens
+❌ false → navigation stops
+🔁 UrlTree → redirect to another route
+
+User clicks link / types URL
+        ↓
+Angular Router
+        ↓
+Guard checks (Auth, Role, Unsaved data, etc.)
+        ↓
+Allowed? → Load Component
+Denied?  → Cancel / Redirect
+
+| Guard                | Purpose                          |
+| -------------------- | -------------------------------- |
+| **CanActivate**      | Can I enter this route?          |
+| **CanActivateChild** | Can I enter child routes?        |
+| **CanDeactivate**    | Can I leave this component?      |
+| **CanLoad**          | Can lazy module be loaded?       |
+| **Resolve**          | Load data before route activates |
+
+1. CanActivate Guard (Most Used) : 
+Use case : Authentication, Role-based access, Feature toggles
+
+@Injectable({ providedIn: 'root' })
+export class AuthGuard implements CanActivate {
+
+  constructor(private router: Router) {}
+
+  canActivate(): boolean | UrlTree {
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      return true;
+    }
+
+    return this.router.parseUrl('/login');
+  }
+}
+2. CanActivateChild Guard : Instead of repeating guards for every child route.
+{
+  path: 'admin',
+  component: AdminComponent,
+  canActivateChild: [AuthGuard],
+  children: [
+    { path: 'users', component: UsersComponent },
+    { path: 'settings', component: SettingsComponent }
+  ]
+}
+👉 Guard applies to all children
+
+3. CanDeactivate Guard (Prevent Losing Data)
+Use case : Unsaved forms, Confirmation before leaving page
+
+4. CanLoad Guard (Lazy Loading Protection) : CanLoad runs only once (when module loads)
+
+Why?
+Prevent even downloading a lazy module
+More secure than CanActivate
+
+5. Resolve Guard (Preload Data)
+Why?
+Avoid showing empty UI
+Fetch data before component loads
+
+⚙️ Return Types Guards Can Use
+boolean
+UrlTree
+Observable<boolean | UrlTree>
+Promise<boolean | UrlTree>
+
+Why Observables?
+
+API calls
+Token validation
+Role checks
+
+Q: Difference between CanActivate and CanLoad?
+| CanActivate           | CanLoad               |
+| --------------------- | --------------------- |
+| Checks navigation     | Checks module loading |
+| Module already loaded | Prevents loading      |
+| Runs every navigation | Runs once             |
+
+Q: Can guards be async?✅ Yes — Observables & Promises
+
+Q: Where should authentication logic live?
+✔ In AuthService, not guard
+
+
+What are HTTP Interceptors in Angular?
+HTTP Interceptors are middleware that sit between your Angular app and the server. They allow you to intercept, modify, or handle HTTP requests and responses globally.
+
+Why Do We Need Interceptors?
+Without interceptors:
+Add headers in every API call
+Handle errors again and again
+Manually attach tokens everywhere
+
+With interceptors:
+✅ Centralized logic
+✅ Cleaner services
+✅ Reusable & maintainable code
+
+Common Use Cases
+| Use Case       | Example                 |
+| -------------- | ----------------------- |
+| Authentication | Attach JWT token        |
+| Logging        | Log request/response    |
+| Error Handling | Global 401/500 handling |
+| Loader         | Show/hide spinner       |
+| Retry          | Retry failed requests   |
+| Caching        | Cache GET requests      |
+
+1. Retry Failed Requests : 
+next.handle(req).pipe(
+  retry(2)
+);
+
+2. Caching GET Requests : Store response in a Map.
+if (req.method !== 'GET') {
+  return next.handle(req);
+}
+
+3. Token Refresh
+401 → refresh token → retry original request
+Key idea:
+Queue requests
+Refresh once
+Replay failed calls
+
+Q: Why use interceptors instead of services?
+👉 Interceptors are global and automatic
+
+Q: Can interceptors modify response?
+✅ Yes, using map() / tap()
+
+Q: Are interceptors synchronous?
+❌ No, they work with Observables
+
+Q: Difference between middleware and interceptor?
+| Middleware  | Interceptor |
+| ----------- | ----------- |
+| Backend     | Frontend    |
+| Server side | Client side |
+
+HTTP Interceptors in Angular are global request/response handlers that let you modify, monitor, secure, and manage all HTTP calls in one place.
+
+
+What are Pipes in Angular?
+Pipes transform data in the template before displaying it.
+
+Pipes take input data → transform it → show formatted output in HTML.
+
+Component data
+     ↓
+Pipe
+     ↓
+Formatted value in template
+
+{{ price | currency }}
+Angular provides many built-in pipes.
+| Pipe        | Example                      | Output        |
+| ----------- | ---------------------------- | ------------- |
+| `uppercase` | `'hello' \| uppercase`       | HELLO         |
+| `lowercase` | `'HELLO' \| lowercase`       | hello         |
+| `titlecase` | `'angular pipes'`            | Angular Pipes |
+| `date`      | `today \| date:'dd/MM/yyyy'` | 04/02/2026    |
+| `currency`  | `100 \| currency:'INR'`      | ₹100.00       |
+| `number`    | `3.14159 \| number:'1.2-2'`  | 3.14          |
+| `percent`   | `0.25 \| percent`            | 25%           |
+| `json`      | `obj \| json`                | JSON view     |
+
+🧩 Custom Pipes (Very Important) : When built-in pipes are not enough, create your own.
+
+Step 1: Generate Pipe : ng generate pipe filter
+
+Step 2: Pipe Definition : 
+@Pipe({
+  name: 'filter'
+})
+export class FilterPipe implements PipeTransform {
+
+  transform(items: any[], searchText: string): any[] {
+
+    if (!items || !searchText) {
+      return items;
+    }
+
+    return items.filter(item =>
+      item.name.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }
+}
+
+Step 3: Use in Template
+<li *ngFor="let user of users | filter:search">
+  {{ user.name }}
+</li>
+
+Pure vs Impure Pipes (VERY IMPORTANT) : 
+🔹 Pure Pipes (Default) : Runs only when input reference changes, Fast & efficient
+
+@Pipe({
+  name: 'filter',
+  pure: true
+})
+
+users = [...users]; // reference changed → pipe runs
+
+🔸 Impure Pipes
+@Pipe({
+  name: 'filter',
+  pure: false
+})
+❌ Runs on every change detection
+❌ Performance cost
+Used when:
+Array mutation (push, splice)
+Real-time data updates
+⚠️ Use carefully
+
+⚡ Async Pipe (Most Powerful Pipe) : Handles Observables & Promises automatically.
+<li *ngFor="let user of user$ | async">
+  {{ user.name }}
+</li>
+
+🔥 Auto subscribe
+🔥 Auto unsubscribe
+🔥 Cleaner code
+
+Q: What is the difference between pipe and filter?
+👉 Pipe is Angular feature; filter is array method
+
+Q: Why async pipe is preferred?
+✔ Prevents memory leaks
+
+Q: Can pipes be used in TypeScript?
+❌ No (template only)
+
+Angular Pipes are template-level data transformers that format, filter, and manage data efficiently, especially with async operations.
+
+🔍 What is “Filter”?
+Filtering means selecting a subset of data based on a condition.
+
+Example:
+From 100 users → show only active users
+From products → show only price < 1000
+
+Filters are implemented using Pipes or component logic
+
+🧠 Where Filtering is Done in Angular? You can filter data in 3 correct places:
+| Place          | Recommended? | Why                   |
+| -------------- | ------------ | --------------------- |
+| Component (TS) | ✅ Best       | Performance & control |
+| Pipe           | ⚠️ OK        | For display-only      |
+| Backend API    | ✅ Best       | Large data sets       |
+
+1. Filtering Using Component (Best Practice)
+users = [
+  { name: 'Raj', active: true },
+  { name: 'Amit', active: false }
+];
+
+filteredUsers = this.users.filter(u => u.active);
+
+Template : 
+<li *ngFor="let user of filteredUsers">
+  {{ user.name }}
+</li>
+
+✅ Fast
+✅ Testable
+✅ No performance issues
+
+2. Filtering Using Custom Pipe (Display-Level Filtering) : Used only when filtering is for UI display.
+<input [(ngModel)]="search">
+
+<li *ngFor="let user of users | filter:search">
+  {{ user.name }}
+</li>
+
+3. Filtering with Backend API (Enterprise Way)
+GET /users?active=true
+Best for:
+Performance
+Pagination
+Security
+
+Filter vs Pipe vs Method (Interview Favorite)
+| Approach           | Performance | Recommended |
+| ------------------ | ----------- | ----------- |
+| Array.filter in TS | ⭐⭐⭐⭐        | ✅ Best      |
+| Custom Pipe        | ⭐⭐          | ⚠️ Limited  |
+| Method in template | ⭐           | ❌ Avoid     |
+
+Q: Does Angular support filters?
+👉 ❌ No, Angular uses pipes
+
+Q: Where should filtering logic be placed?
+👉 ✔ Component or backend
+
+Q: Why avoid filter pipes?
+👉 Performance issues on large lists
+
+Filters mean selecting data based on conditions, and in Angular this is done using component logic, pipes (for display), or backend APIs — not a built-in “filter” feature.
+
+29.reactive forms and template driven forms - What is preferred and Why?
+Angular provides two ways to build forms:
+
+1️. Template-Driven Forms (TDF)
+2️. Reactive Forms (RF)
+
+1️. Template-Driven Forms (Beginner)
+What it is
+Logic is written mostly in HTML
+Angular creates form model behind the scenes
+Uses ngModel
+
+<form #f="ngForm">
+  <input name="email" ngModel required email>
+  <button [disabled]="f.invalid">Submit</button>
+</form>
+
+Characteristics
+
+✔ Easy to start
+✔ Less TypeScript
+❌ Hard to scale
+❌ Limited control
+
+2. Reactive Forms (Beginner → Intermediate)
+What it is
+Form model is created explicitly in TypeScript
+Template is only for binding
+Uses FormControl, FormGroup, FormArray
+
+this.form = new FormGroup({
+  email: new FormControl('', [Validators.required, Validators.email])
+});
+
+<form [formGroup]="form">
+  <input formControlName="email">
+  <button [disabled]="form.invalid">Submit</button>
+</form>
+
+Characteristics
+
+✔ More control
+✔ Scalable
+✔ Testable
+
+Key Differences (Interview Table)
+| Aspect            | Template-Driven | Reactive    |
+| ----------------- | --------------- | ----------- |
+| Form creation     | HTML            | TypeScript  |
+| Control over form | Limited         | Full        |
+| Validation        | Template        | Code        |
+| Scalability       | ❌ Poor          | ✅ Excellent |
+| Unit testing      | ❌ Hard          | ✅ Easy      |
+| Dynamic forms     | ❌ Difficult     | ✅ Easy      |
+| Async validation  | ❌ Limited       | ✅ Strong    |
+| Large forms       | ❌ Not suitable  | ✅ Preferred |
+
+🏆 Which is Preferred and Why?
+✅ Reactive Forms are Preferred (in real projects)
+WHY?
+1. Predictable & Explicit : You know exactly what happens and when.
+2. Better for Complex Forms
+Dynamic fields
+Conditional validation
+Nested forms
+Form arrays
+3. Easier Unit Testing
+4. Strong Validation Support
+5. Better Performance
+Reactive forms:
+Immutable
+Synchronous
+Controlled change detection
+
+
+When Template-Driven Forms Are OK
+
+Template-Driven Forms are acceptable when:
+
+✔ Small forms
+✔ Simple validation
+✔ Quick POC / demo
+✔ Less logic
+
+Real-World Decision Rule
+| Scenario                      | Preferred       |
+| ----------------------------- | --------------- |
+| Simple login form             | Template-Driven |
+| Enterprise application        | Reactive        |
+| Dynamic forms                 | Reactive        |
+| Forms with complex validation | Reactive        |
+| Unit-tested forms             | Reactive        |
+
+Q: Can we mix both?
+👉 ❌ Not recommended (Angular warns)
+
+Q: Which has better performance?
+👉 Reactive Forms
+
+Q: Which supports async validation better?
+👉 Reactive Forms
+
+Reactive Forms are preferred because they provide better control, scalability, testability, and support complex validation and dynamic form scenarios, making them suitable for enterprise applications. 
+Template-Driven Forms are suitable only for simple forms.
+
+28.Different between const var and let let
+They are keywords to declare variables in JavaScript.
+But they differ in scope, hoisting, re-declaration, re-assignment, and best practices.
+
+1. var (Old JavaScript – ES5)
+
+🔍 Scope (Function Scoped)
+if (true) {
+  var a = 5;
+}
+console.log(a); // ✅ 5
+
+var ignores block scope → dangerous.
+
+⬆️ Hoisting
+console.log(x); // undefined
+var x = 10;
+
+Behind the scenes:
+
+var x;
+console.log(x);
+x = 10;
+
+Hoisted and initialized to undefined.
+
+🔁 Re-declare Allowed
+var x = 1;
+var x = 2; // ✅ allowed
+❌ Can cause bugs.
+
+❌ Why var is BAD
+
+No block scope
+Can be re-declared
+Hard to debug
+Causes accidental overwrites
+
+👉 Avoid using var
+
+🧱 2️. let (Modern JavaScript – ES6)
+let y = 10;
+
+🔍 Scope (Block Scoped)
+if (true) {
+  let b = 5;
+}
+console.log(b); // ❌ ReferenceError
+✔ Block scope ({})
+
+
+⬆️ Hoisting (BUT different)
+console.log(y); // ❌ ReferenceError
+let y = 10;
+
+Why?
+let is hoisted
+BUT not initialized
+Lives in Temporal Dead Zone (TDZ)
+
+🔁 Re-declaration NOT Allowed
+let y = 1;
+let y = 2; // ❌ Error
+
+🔄 Re-assignment Allowed
+let y = 1;
+y = 2; // ✅ allowed
+
+✔️ When to use let
+
+Variable value will change
+Loop counters
+Conditional assignments
+
+🧱 3️. const (Best Practice)
+const z = 10;
+
+🔍 Scope (Block Scoped)
+Same as let.
+
+❌ Re-assignment NOT Allowed
+const z = 10;
+z = 20; // ❌ Error
+
+❌ Must Initialize
+const a; // ❌ Error
+
+const user = { name: 'Raj' };
+user.name = 'Amit'; // ✅ allowed
+user = {}; // ❌ Error
+
+const protects reference, not value
+
+Hoisting
+
+Same as let:
+Hoisted
+In TDZ
+Cannot access before declaration
+
+| Feature         | var             | let       | const       |
+| --------------- | --------------- | --------- | ----------- |
+| Scope           | Function        | Block     | Block       |
+| Hoisting        | Yes (undefined) | Yes (TDZ) | Yes (TDZ)   |
+| Re-declare      | ✅ Yes           | ❌ No      | ❌ No        |
+| Re-assign       | ✅ Yes           | ✅ Yes     | ❌ No        |
+| Must initialize | ❌ No            | ❌ No      | ✅ Yes       |
+| Best practice   | ❌ Avoid         | ⚠️ Use    | ✅ Preferred |
+
+🧠 Temporal Dead Zone (Deep Concept)
+
+{
+  console.log(a); // ❌ TDZ
+  let a = 10;
+}
+
+TDZ exists from:
+Block start → variable declaration
+
+Purpose:
+
+Prevents accessing variables before initialization
+Avoids bugs
+
+🚀 Real-World Best Practices
+
+✔ Use const by default
+✔ Use let when value changes
+❌ Never use var
+
+Q: Difference between var and let?
+👉 Scope + hoisting + re-declaration
+
+Q: Is const immutable?
+👉 ❌ No, reference is immutable
+
+Q: Why let & const were introduced?
+👉 To fix issues with var
+
+
+var is function-scoped and unsafe, let is block-scoped and re-assignable, and const is block-scoped and immutable by reference; modern JavaScript prefers const and let over var.
+
+Binding = connecting your component (TypeScript) and your template (HTML)
+So that data flows between them automatically.
+
+
+Without binding: <h1>Hello World</h1>
+With binding: <h1>Hello {{ userName }}</h1>
+Now when userName changes in TS, UI updates automatically.
+
+Types of Binding in Angular
+Angular has 4 main types of binding:
+| Type             | Direction |
+| ---------------- | --------- |
+| Interpolation    | TS → HTML |
+| Property Binding | TS → HTML |
+| Event Binding    | HTML → TS |
+| Two-Way Binding  | TS ↔ HTML |
+
+1. Interpolation {{ }} : Used to display values from component in HTML.
+export class AppComponent {
+  title = 'Angular App';
+  age = 30;
+}
+<h1>{{ title }}</h1>
+<p>Age: {{ age }}</p>
+
+Key points
+
+One-way binding (Component → View)
+Only works inside text
+You cannot use it inside attributes
+
+<img src="{{ imageUrl }}">   ❌ Wrong:
+
+2. Property Binding [property] : Used to bind HTML element properties dynamically.
+
+export class AppComponent {
+  imageUrl = 'logo.png';
+  isDisabled = true;
+}
+
+<img [src]="imageUrl">
+<button [disabled]="isDisabled">Save</button>
+
+Why not interpolation?
+Because src, disabled, value are DOM properties, not text.
+
+Key points
+One-way (Component → View)
+Uses square brackets [ ]
+Preferred over interpolation for attributes
+
+3. Event Binding (event) : Used to handle user actions like click, input, submit.
+
+export class AppComponent {
+  sayHello() {
+    alert('Hello!');
+  }
+}
+
+<button (click)="sayHello()">Click Me</button>
+
+Passing data
+<input (input)="onInput($event)">
+onInput(event: any) {
+  console.log(event.target.value);
+}
+
+
+Key points
+One-way (View → Component)
+Uses round brackets ( )
+$event gives event details
+
+4. Two-Way Binding [( )] (Banana in a box 🍌) : Keeps component & template in sync.
+export class AppComponent {
+  name = '';
+}
+
+<input [(ngModel)]="name">
+<p>Hello {{ name }}</p>
+
+What happens?
+
+User types → name updates
+name changes → UI updates
+
+[(ngModel)] = [value] + (input)
+
+You must import FormsModule
+import { FormsModule } from '@angular/forms';
+
+When to use
+Simple forms
+Small apps
+Prototyping
+
+Angular always prefers property binding.
+
+Style & Class Binding
+Style binding
+<p [style.color]="isError ? 'red' : 'green'">
+  Status
+</p>
+
+Class binding
+<div [class.active]="isActive"></div>
+
+Multiple classes
+<div [ngClass]="{active: isActive, disabled: isDisabled}"></div>
+
+Binding with Directives
+
+Bindings power directives like:
+
+*ngIf
+*ngFor
+[ngStyle]
+[ngClass]
+
+<p *ngIf="isLoggedIn">Welcome!</p>
+
+
+Best Practices (Very Important)
+
+✅ Use Interpolation for text
+✅ Use Property binding for attributes
+✅ Use Event binding for actions
+❌ Avoid two-way binding in large apps
+✅ Prefer Reactive Forms instead of ngModel
+
+Q: Difference between interpolation and property binding?
+Interpolation → text only
+Property binding → DOM properties
+
+Q: Is two-way binding automatic?
+No — Angular does not do two-way by default.
+
+Q: Which binding is fastest?
+Property & event bindings (compiled & optimized)
+
+| Scenario                | Binding        |
+| ----------------------- | -------------- |
+| Display data            | Interpolation  |
+| Disable/enable elements | Property       |
+| Button clicks           | Event          |
+| Simple input            | Two-way        |
+| Enterprise apps         | Reactive forms |
+
+What is ASP.NET Core Pipeline?
+
+The ASP.NET Core pipeline is the sequence of middleware components that handle every HTTP request and response.
+📌 Every request:
+
+Enters the pipeline
+Passes through middleware one by one
+Either gets handled or passed forward
+Returns a response back through the same pipeline
+
+Client
+  ↓
+Middleware 1
+  ↓
+Middleware 2
+  ↓
+Middleware 3
+  ↓
+Endpoint (Controller / Minimal API)
+  ↓
+Response flows back in reverse
+
+What is Middleware?
+Middleware is a component that:
+
+Receives HTTP request
+Can process it
+Can pass it to the next middleware
+Can short-circuit the pipeline
+
+async (HttpContext context, RequestDelegate next) =>
+{
+    // Before
+    await next(context);
+    // After
+}
+
+How a Request Actually Flows (Step-by-Step)
+1. How a Request Actually Flows (Step-by-Step) : The request enters Kestrel (web server).
+GET /api/users
+
+2. Middleware Executes (Top → Bottom)
+app.UseExceptionHandler();
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+1. UseExceptionHandler
+
+Catches unhandled exceptions
+Prevents app crash
+Returns friendly error
+
+📌 Should be first
+
+2. UseHttpsRedirection
+
+Redirects HTTP → HTTPS
+Security layer
+
+3. UseRouting
+
+Matches URL to endpoint
+Doesn’t execute controller yet
+
+4. UseCors
+
+Checks browser origin rules
+Blocks/permits request
+
+5. UseAuthentication
+
+Reads token
+Validates identity
+Sets HttpContext.User
+
+6. UseAuthorization
+
+Checks permissions/roles
+Allows or denies access
+
+7. MapControllers
+
+Executes controller action
+Generates response
+
+Response Goes Back (Bottom → Top)
+This is important 👇
+Controller
+↑
+Authorization
+↑
+Authentication
+↑
+CORS
+↑
+Routing
+↑
+Exception Handler
+↑
+Client
+📌 Middleware can modify the response too
+
+Short-Circuiting the Pipeline : A middleware can stop the request.
+app.Use(async (context, next) =>
+{
+    if (!context.Request.Headers.ContainsKey("X-API-KEY"))
+    {
+        context.Response.StatusCode = 401;
+        return; // pipeline stops here
+    }
+
+    await next();
+});
+🚫 Controller never runs
+
+Use vs Run vs Map
+Use
+
+Calls next middleware
+Most common
+app.UseMiddleware<MyMiddleware>();
+
+Run
+
+Terminates pipeline
+No next()
+app.Run(async context =>
+{
+    await context.Response.WriteAsync("Hello");
+});
+
+Map
+
+Branches pipeline based on path
+app.Map("/admin", adminApp =>
+{
+    adminApp.Run(async context =>
+    {
+        await context.Response.WriteAsync("Admin area");
+    });
+});
+
+What is Dependency Injection?
+
+Dependency Injection is a design pattern where:
+An object does not create its dependencies Instead, dependencies are provided (injected) from outside
+
+📌 In ASP.NET Core, DI is built-in (no extra framework needed).
+
+Why DI is Important?
+
+✔ Loose coupling
+✔ Easy testing (mocking)
+✔ Better maintainability
+✔ Follows SOLID principles
+✔ Enterprise-ready architecture
+
+How DI Works Internally (Flow)
+App starts
+Services registered in container
+Request comes in
+Container creates controller
+Injects required dependencies
+Disposes based on lifetime
+
+Types of Dependency Injection
+1. Constructor Injection (Recommended ✅)
+public class UserController : ControllerBase
+{
+    private readonly IUserService _service;
+
+    public UserController(IUserService service)
+    {
+        _service = service;
+    }
+}
+✔ Most common
+✔ Clear dependencies
+✔ Best practice
+
+2. Method Injection : Use sparingly.
+public IActionResult Get([FromServices] ILogger logger)
+
+3. Property Injection ❌ Not supported by default.
+
+Service Lifetimes (VERY IMPORTANT 🔥)
+1. Transient
+services.AddTransient<IService, Service>();
+
+New instance every time
+Lightweight, stateless services
+
+2. Scoped (Most Used in Web Apps)
+services.AddScoped<IService, Service>();
+
+One instance per HTTP request
+Perfect for DB contexts
+
+📌 DbContext should always be Scoped
+
+3. Singleton
+services.AddSingleton<IService, Service>();
+
+Single instance for entire app
+Shared across requests
+⚠️ Must be thread-safe
+
+| Lifetime  | Instance        |
+| --------- | --------------- |
+| Transient | Every injection |
+| Scoped    | Per request     |
+| Singleton | Per application |
+
+What is a Clustered Index?
+
+A clustered index determines how the data is physically stored on disk.
+👉 In a table with a clustered index:
+Rows are stored in the order of the clustered index key
+The table data is the index
+
+When Clustered Index Helps Most
+
+✔ Large tables
+✔ Range queries
+✔ Sorting
+✔ Reporting queries
+
+Interview One-Liners (💥 Must Say)
+“Clustered index defines physical order of data”
+“Only one clustered index per table”
+“Leaf nodes contain actual data”
+“Primary key is not always clustered”
+“Good clustered index improves range queries”
+
+How would you document your APIs? 
+I Document APIs Using Swagger. 
+In ASP.NET Core, Swagger is the default and recommended approach.
+
+What is Swagger?
+
+Swagger (OpenAPI) is:
+A machine-readable API specification
+Auto-generated from code
+Interactive UI to test APIs
+
+I primarily document my APIs using Swagger/OpenAPI in ASP.NET Core because it’s auto-generated, always in sync with code, and easy for consumers to test.
+In addition, I maintain a README or Wiki to explain authentication flows, error handling, rate limits, and versioning.
+For collaboration, I also share Postman collections so frontend and QA teams can work independently.
+
+3.   Any issues implementing JWT tolens?
+1. Token Expiry Issues (401 errors suddenly)
+Problem:
+Users were getting 401 Unauthorized even though they were logged in.
+JWT access tokens expired (e.g., 15 minutes).
+
+Why it happens:
+JWT is stateless → server does NOT track sessions.
+Once expired, token is invalid.
+
+Solution:
+Implemented Refresh Token mechanism
+Short-lived Access Token (10–15 mins)
+Long-lived Refresh Token (7–30 days)
+Client silently calls /refresh-token when access token expires
+
+2. Secure Storage of JWT on Client
+
+| Storage              | Risk     | Used When         |
+| -------------------- | -------- | ----------------- |
+| localStorage         | XSS      | Avoid if possible |
+| sessionStorage       | XSS      | Slightly better   |
+| **HttpOnly Cookies** | ✅ Secure | **Best practice** |
+
+Solution I used:
+
+Stored access token in memory
+Stored refresh token in HttpOnly + Secure cookie
+
+3. Token Theft / Replay Attacks
+Problem:
+If JWT is stolen, attacker can use it till expiry.
+
+Mitigation steps:
+Very short access token lifetime
+HTTPS enforced (RequireHttpsMetadata)
+Added Audience, Issuer, SigningKey validation
+Used rotating refresh tokens
+
+4. Logout Not Working Properly
+Problem:
+
+JWT is stateless → server can’t “delete” a token
+
+Solutions:
+
+On logout:
+Delete refresh token from DB
+Clear HttpOnly cookie
+Optional:
+Maintain token blacklist (for critical systems)
+
+✅ Logout became effective immediately.
+
+5. Large JWT Payload (Performance Issue)
+Problem:
+
+JWT size increased (roles, permissions, claims)
+Increased request header size → performance hit
+
+Solution:
+
+Kept JWT minimal
+
+Stored only:
+
+UserId
+Role
+Loaded permissions from cache/DB if needed
+
+✅ Faster requests + smaller tokens.
+
+6. Refresh Token Reuse Attack
+
+Problem:
+Same refresh token used multiple times
+
+Solution (Best Practice):
+Rotate refresh tokens
+
+On refresh:
+Invalidate old refresh token
+Issue a new one
+If reuse detected → revoke all tokens
+
+✅ Improved security drastically.
+
+API Request Lifecycle (ASP.NET Core)
+1. Client Sends HTTP Request
+2. Web Server (Kestrel / IIS)
+3. Middleware Pipeline Begins
+Request
+ ↓
+Exception Middleware
+ ↓
+Routing Middleware
+ ↓
+Authentication Middleware
+ ↓
+Authorization Middleware
+ ↓
+Endpoint Middleware
+4. Routing (Endpoint Selection)
+5. Authentication
+6. Authorization
+7. Model Binding -> Reads request data, Converts JSON → C# object
+8. Model Validation -> Uses Data Annotations
+[Required]
+[StringLength(50)]
+public string Name { get; set; }
+If invalid:
+400 Bad Request
+{
+  "errors": { ... }
+}
+9. Filters Execution
+10. Controller Action Executes
+11. Response Travels Back Through Middleware
+12. Server Sends HTTP Response
+
+Client → Kestrel → Middleware → Routing → Auth → Authorization → Model Binding → Filters → Controller → Response → Client
+
+5.   Did you work on Custom middleware?
+Yes, Custom middleware is code that:
+
+Executes on every request
+Runs before and after the next component
+Handles cross-cutting concerns
+
+Example 1: Global Exception Handling Middleware
+Example 2: Request & Response Logging
+Example 3: Custom Header Validation
+Example 4: Tenant / Correlation ID Middleware
+Yes, I have implemented custom middleware in ASP.NET Core. I mainly used it for global exception handling, request–response logging, 
+and validating custom headers. Middleware helped me centralize cross-cutting concerns instead of duplicating logic in controllers. 
+It runs early in the request pipeline and improves maintainability, observability, and consistency across APIs
+
+6.   What different types of Rest APIs did you know and use?
+1. CRUD-Based REST APIs (Most Common)
+APIs that map HTTP verbs to database operations.
+| Operation | HTTP Verb   | Example        |
+| --------- | ----------- | -------------- |
+| Create    | POST        | `/api/users`   |
+| Read      | GET         | `/api/users/1` |
+| Update    | PUT / PATCH | `/api/users/1` |
+| Delete    | DELETE      | `/api/users/1` |
+2. Resource-Oriented APIs : API is designed around resources, not actions.
+/users/{id}
+3. Stateless REST APIs : Server does not store client session, Every request contains authentication info (JWT)
+4. Secured REST APIs : APIs protected using JWT, OAuth 2.0, Role & policy-based authorization
+5. Versioned REST APIs : Backward compatibility, Safe evolution of APIs
+/api/v1/users
+/api/v2/users
+6. Async / High-Performance REST APIs : Uses async/await, Non-blocking I/O
+7. Idempotent REST APIs : Multiple identical requests produce same result.
+Used in:
+PUT
+DELETE
+
+Example:
+Calling DELETE multiple times → same final state.
+8. REST APIs with Pagination, Filtering & Sorting :
+GET /api/users?page=1&pageSize=20&sort=name
+
+I have worked with multiple types of REST APIs including CRUD-based, resource-oriented, stateless, secured, and versioned APIs. 
+Most of the APIs I built were JWT-secured, async, and followed REST best practices like proper HTTP verbs, idempotency, pagination, and versioning. 
+I have also handled internal APIs for microservices and external APIs for client applications.
+
+7.   If you want to pass data from 1 middleware to other middleware how do you do it?
+HttpContext
+Why HttpContext.Items?
+
+Per-request storage
+Thread-safe
+Automatically cleared after request
+Designed exactly for this purpose
+
+To pass data from one middleware to another, I use HttpContext.Items. It provides per-request storage that is shared across the middleware pipeline.
+ One middleware can store data in HttpContext.Items, and downstream middleware can read it. Since the same HttpContext flows through the pipeline, 
+ this approach is thread-safe and commonly used for correlation IDs, tenant information, and logging.
+ 
+ 
+8.   How will you make a service available to the controller?
+In ASP.NET Core, controllers do not create objects directly.
+
+Instead:
+
+Services are registered in the DI container, Controllers request them via constructor injection
+
+This is called Dependency Injection.
+
+| Lifetime  | When to Use            |
+| --------- | ---------------------- |
+| Singleton | Config, cache          |
+| Scoped    | DB, business services  |
+| Transient | Lightweight, stateless |
+
+
+In ASP.NET Core, I make a service available to a controller using dependency injection. 
+I register the service in the built-in DI container with an appropriate lifetime and inject it into the controller via constructor injection.
+This approach promotes loose coupling, testability, and clean architecture.
+
+What Is Asynchronous Programming?
+
+In asynchronous programming:
+Long-running tasks run in the background
+The thread is not blocked
+The app can do other work meanwhile
+
+Why Asynchronous Programming Exists
+
+Many operations are slow:
+
+Database calls
+HTTP calls
+File I/O
+Cloud services
+
+Waiting for them blocks threads, wasting resources.
+
+How Async Works
+Uses Task, async, and await
+
+When await is hit:
+The thread is released back to thread pool
+Task continues in background
+
+When task completes:
+Execution resumes from await
+
+public async Task<IActionResult> GetData()
+{
+    var data = await _service.GetDataAsync(); // non-blocking
+    return Ok(data);
+}
+
+Benefits of Asynchronous Programming
+1. Better Performance & Scalability
+2. Improved Responsiveness
+3. Efficient Resource Utilization
+4. Essential for Cloud & Microservices
+
+Real-World Scenarios of Using Async
+Scenario 1: Database Calls (Very Common)
+await _dbContext.Users.ToListAsync();
+
+Scenario 2: Calling External APIs
+var response = await httpClient.GetAsync(url);
+
+Scenario 3: File Upload / Download
+await file.CopyToAsync(stream);
+
+Scenario 4: Parallel Async Calls
+await Task.WhenAll(task1, task2, task3);
+
+Scenario 5: Background Processing
+await Task.Run(() => ProcessData());
+
+When NOT to Use Async
+| Case                   | Why        |
+| ---------------------- | ---------- |
+| CPU-bound tasks        | No benefit |
+| Simple in-memory logic | Overhead   |
+| Fire-and-forget tasks  | Risky      |
+
+❌ Using .Result or .Wait()
+Causes deadlocks
+
+❌ Not using Async all the way
+Sync-over-async problem
+
+❌ Blocking calls inside async method
+Thread.Sleep(1000); ❌
+
+| Async              | Multi-threading   |
+| ------------------ | ----------------- |
+| I/O bound          | CPU bound         |
+| Uses fewer threads | Uses many threads |
+| Non-blocking       | Blocking          |
+
+Asynchronous programming allows long-running operations like database calls, HTTP requests, and file I/O to execute without blocking threads. 
+In ASP.NET Core, async and await help improve scalability and performance by freeing up thread pool threads while waiting for I/O operations. 
+I commonly use async for database access with Entity Framework, calling external APIs, and parallel data fetching using Task.WhenAll.
+
+11. If API has 3 waits - what doesn't it mean? How does it work Instead of above if you use 3 tasks vs When.all - what it is the advantage?
+If an API has 3 awaits — what does it NOT mean?
+✅ What it ACTUALLY means
+
+It means:
+The method has 3 asynchronous I/O operations
+
+Each await:
+Releases the thread back to the thread pool
+Continues execution only when that operation finishes
+By default, they run sequentially
+
+var user = await GetUserAsync();      // wait #1
+var orders = await GetOrdersAsync();  // wait #2
+var profile = await GetProfileAsync(); // wait #3
+
+GetUserAsync    ------>
+GetOrdersAsync             ------>
+GetProfileAsync                       ------>
+
+await does NOT block the thread — but execution waits logically before moving to the next line.
+
+Now: Using 3 Tasks + Task.WhenAll
+var userTask = GetUserAsync();
+var ordersTask = GetOrdersAsync();
+var profileTask = GetProfileAsync();
+
+await Task.WhenAll(userTask, ordersTask, profileTask);
+
+var user = userTask.Result;
+var orders = ordersTask.Result;
+var profile = profileTask.Result;
+
+What changes?
+
+✅ All 3 operations start immediately
+✅ They run in parallel (for I/O)
+✅ We wait for all of them together
+
+Timeline
+GetUserAsync    ------>
+GetOrdersAsync  ------>
+GetProfileAsync ------>
+
+⏱️ Total time = max of all 3 waits
+
+Advantage of Task.WhenAll over 3 awaits
+✅ 1. Performance Improvement
+
+Reduces total response time
+
+Ideal when tasks are independent
+
+📌 Example:
+User info (200 ms)
+Orders (300 ms)
+Profile (250 ms)
+
+Sequential: 750 ms
+WhenAll: ~300 ms
+
+2. Better Resource Utilization
+3. Cleaner & Intentional Code
+4. Common in Real Systems
+5. Important Rule: When NOT to use WhenAll
+❌ If tasks depend on each other
+var user = await GetUserAsync();
+var orders = await GetOrdersAsync(user.Id); // depends on user
+
+❌ For CPU-bound work
+❌ For very large number of tasks (uncontrolled fan-out)
+6. Exception handling difference (Interview Gold ⭐)
+With sequential awaits
+
+First failure stops execution
+
+With Task.WhenAll
+
+All tasks run
+If any fails → AggregateException
+Must handle carefully
+
+try
+{
+    await Task.WhenAll(tasks);
+}
+catch (Exception ex)
+{
+    // handle/log
+}
+
+Multiple awaits ≠ parallel execution
+Task.WhenAll = controlled concurrency
+
+Concurrency = dealing with many things at once
+Parallelism = doing many things at the same time
+
+Concurrency (Logical Overlap)
+What it means
+Multiple tasks make progress together
+Tasks are interleaved
+Not necessarily simultaneous
+Often uses one thread
+
+Think of:
+
+A single waiter handling multiple tables
+(taking order → moving → serving → moving)
+
+await GetUserAsync();
+await GetOrdersAsync();
+
+Parallelism (Physical Simultaneity)
+What it means
+
+Multiple tasks run at the exact same time
+Uses multiple CPU cores
+Requires multiple threads
+
+Think of:
+Multiple waiters serving tables at the same time
+
+Parallel.ForEach(items, item =>
+{
+    Process(item);
+});
+Task.Run(() => HeavyComputation());
+
+👉 Tasks truly run simultaneously on different cores.
+
+Where parallelism shines
+
+CPU-intensive tasks
+Image processing
+Data crunching
+Scientific computation
+
+| Aspect               | Concurrency    | Parallelism |
+| -------------------- | -------------- | ----------- |
+| Runs at same time?   | ❌ Not required | ✅ Yes       |
+| Uses multiple cores? | ❌ Optional     | ✅ Required  |
+| Typical use          | I/O bound      | CPU bound   |
+| Common in Web APIs   | ✅ Very common  | ❌ Rare      |
+| async/await          | ✅ Yes          | ❌ No        |
+| Parallel.For         | ❌ No           | ✅ Yes       |
+
+16.configuration parameters - using Ci/Cd or others - How do you do it?
+Configuration should be externalized, not hard-coded
+
+This allows:
+Different environments (Dev / QA / Prod)
+Secure secret handling
+Zero code changes between deployments
+
+1. AppSettings (Environment-Specific)
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+
+2. Environment Variables (CI/CD Friendly)
+var conn = builder.Configuration["ConnectionStrings:Default"];
+
+3. Secrets Management (Very Important ⭐)
+❌ Never store secrets in code or repo
+✅ Azure Key Vault
+
+DB connection strings
+Client secrets
+Certificates
+
+builder.Configuration.AddAzureKeyVault(
+    new Uri(keyVaultUrl),
+    new DefaultAzureCredential());
+4. CI/CD Pipeline Variables (Azure DevOps Example)
+variables:
+- group: Prod-Config
+
+5. Managed Identity (Best Practice)
+
+No secrets at all 🎯
+
+App gets identity
+Key Vault grants access
+No credentials stored
+Used heavily in production systems.
+
+17.Do you use AzureKeyVault?
+Yes, I use Azure Key Vault to securely manage secrets like connection strings, API keys, and certificates.
+ I integrate it with ASP.NET Core using Managed Identity and DefaultAzureCredential, so no secrets are stored in code or pipelines. 
+ The application reads secrets from Key Vault through the configuration system, 
+ which allows secure access and easy secret rotation without redeploying the application.
+ 
+19.Are you familiar with CQRS pattern? where you have used in your development? 
+CQRS (Command Query Responsibility Segregation)
+
+What is CQRS?
+Separate READ operations and WRITE operations into different models
+
+Command → used to change data (Create, Update, Delete)
+Query → used to read data (Get, Search, List)
+
+Traditional approach (without CQRS)
+Normally in ASP.NET Web API:
+Controller
+  → Service
+     → Repository
+        → Entity (same model)
+		
+Same model is used for:
+
+Insert
+Update
+Fetch
+Display
+
+Problem with this approach
+
+One model becomes too complex
+Read queries and write logic fight each other
+Performance tuning becomes hard
+Validation + mapping becomes messy
+
+CQRS idea (simple visualization)
+Client
+ ├── Command Side (WRITE)
+ │     → CreateOrderCommand
+ │     → UpdateOrderCommand
+ │     → DeleteOrderCommand
+ │
+ └── Query Side (READ)
+       → GetOrderByIdQuery
+       → GetOrdersListQuery
+✔ Different models
+✔ Different logic
+✔ Different optimization
+
+Commands vs Queries (very important)
+Command : 
+Changes system state
+Returns nothing or just success/failure
+Has business rules & validation
+
+Query
+Only reads data
+Never modifies data
+Optimized for performance
+
+Why CQRS? (Advantages)
+✅ Clear separation of responsibilities
+
+Commands → business rules
+Queries → fast reads
+
+✅ Better performance
+
+Queries can:
+
+Use DTOs
+Use indexes
+Skip tracking (EF Core)
+
+✅ Easier to scale
+
+Heavy reads? Scale query side
+Heavy writes? Scale command side
+
+✅ Cleaner code
+
+Smaller classes
+Easier testing
+
+Easier maintenance
+
+CQRS with EF Core (important interview point)
+Command side
+_dbContext.Products.Add(product);
+await _dbContext.SaveChangesAsync();
+
+Query side
+_dbContext.Products
+  .AsNoTracking()
+  .Select(p => new ProductDto { ... })
+  .ToListAsync();
+
+
+✔ Write side uses tracking
+✔ Read side uses AsNoTracking
+
+CQRS vs MVC (common confusion)
+MVC	CQRS
+Architectural pattern	Design pattern
+Separates UI	Separates READ & WRITE
+Controller handles both	Commands & Queries are separate
+Used everywhere	Used in complex systems
+
+👉 CQRS can exist inside MVC or Web API
+
+🔟 CQRS ≠ Event Sourcing (very important)
+
+❌ CQRS does NOT mean Event Sourcing
+✔ You can use CQRS without events
+
+But:
+
+CQRS + Event Sourcing = advanced architecture
+
+1️⃣1️⃣ When should you use CQRS?
+✅ Good fit
+
+Large applications
+Complex business rules
+Read-heavy systems
+Microservices
+Performance-critical APIs
+
+❌ Avoid CQRS when
+
+Simple CRUD apps
+Small projects
+Tight deadlines
+Team is inexperienced
+
+1️⃣2️⃣ Real-world usage example (interview-ready)
+
+“We used CQRS in a high-traffic ASP.NET Core API where read operations were much heavier than writes.
+We separated commands and queries to optimize read performance using lightweight DTOs and AsNoTracking, while command handlers focused purely on business logic and validations.”
+
+🔥 This answer impresses interviewers.
+
+Most projects use:
+Controller → MediatR → Handler
+
+Benefits:
+
+Loose coupling
+Clean architecture
+Easy testing
+
+
+CQRS is a pattern where we separate write operations (commands) and read operations (queries) into different models to 
+improve clarity, performance, and scalability.
+
+20. What are IRequest and INotification?
+Both come from MediatR (commonly used with CQRS in ASP.NET Core).
+
+They define how a message is handled
+
+IRequest (Command / Query)
+🔹 What is IRequest?
+
+IRequest represents a request that expects a response.
+
+👉 Think Command or Query.
+public record GetUserByIdQuery(int Id) : IRequest<UserDto>;
+
+🔹 Key characteristics
+
+✔ Has one handler
+✔ Returns a response
+✔ Used for Commands & Queries
+✔ Synchronous or asynchronous
+❌ Cannot have multiple handlers
+
+public record GetUserByIdQuery(int Id) : IRequest<UserDto>;
+
+Handler:
+public class GetUserByIdHandler 
+    : IRequestHandler<GetUserByIdQuery, UserDto>
+{
+    public async Task<UserDto> Handle(
+        GetUserByIdQuery request, 
+        CancellationToken cancellationToken)
+    {
+        return userDto;
+    }
+}
+
+🔹 Typical use cases
+
+Get data (Query)
+Create / Update / Delete (Command)
+Business logic execution
+
+What is INotification?
+
+INotification represents a fire-and-forget message.
+
+👉 Think Domain Event / Integration Event.
+public record UserCreatedEvent(int UserId) : INotification;
+
+🔹 Key characteristics
+
+✔ No return value
+✔ Can have multiple handlers
+✔ Used for side effects
+✔ Fire-and-forget
+❌ Not used to fetch data
+
+public class SendEmailHandler 
+    : INotificationHandler<UserCreatedEvent>
+{
+    public async Task Handle(
+        UserCreatedEvent notification, 
+        CancellationToken cancellationToken)
+    {
+        // send email
+    }
+}
+
+| Feature        | IRequest         | INotification          |
+| -------------- | ---------------- | ---------------------- |
+| Purpose        | Command / Query  | Event                  |
+| Response       | Yes              | No                     |
+| Handlers       | Exactly one      | Zero, one, or many     |
+| Pattern        | Request–Response | Publish–Subscribe      |
+| Blocking       | Caller waits     | Fire-and-forget        |
+| Business logic | Yes              | No (side effects only) |
+| Read data      | Yes              | No                     |
+
+23.Azure Service Bus - What is Topic and Queue?
+Azure Service Bus is a message broker used to enable reliable, asynchronous communication between applications.
+
+👉 Sender and receiver don’t need to be online at the same time.
+
+What is a Queue?
+🔹 Beginner definition
+
+A Queue is used for one-to-one communication.
+One message → only ONE consumer receives it.
+
+How Queue works
+Producer → Queue → Consumer
+Message is stored in the queue
+First available consumer locks & processes it
+Message is removed after successful processing
+
+What is a Topic?
+🔹 Beginner definition
+A Topic is used for one-to-many communication.
+
+One message → MULTIPLE subscribers receive it.
+
+Topic Subscriptions (Very Important)
+
+Each subscription:
+
+Acts like its own queue
+Can have filters
+Has its own dead-letter queue
+
+| Feature       | Queue                      | Topic                        |
+| ------------- | -------------------------- | ---------------------------- |
+| Communication | One-to-One                 | One-to-Many                  |
+| Consumers     | One message → one consumer | One message → many consumers |
+| Pattern       | Point-to-Point             | Publish–Subscribe            |
+| Message copy  | Single                     | Multiple (per subscription)  |
+| Use case      | Task processing            | Event broadcasting           |
+| Filters       | ❌ No                       | ✅ Yes (subscriptions)        |

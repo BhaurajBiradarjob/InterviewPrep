@@ -1,0 +1,48 @@
+✅ TDD – Test Driven Development
+What is TDD?
+Test-Driven Development (TDD) is a development approach where: You write tests before writing the actual code.
+
+TDD is a development approach where tests are written before code, following the Red-Green-Refactor cycle.
+
+Yes — test first, code later.
+
+TDD Cycle
+TDD follows a 3-step cycle called:
+
+🔴 RED → 🟢 GREEN → 🔵 REFACTOR
+
+RED
+Write a test → it fails (because code doesn’t exist yet)
+
+GREEN
+Write the minimum code to pass the test
+
+REFACTOR
+Improve code quality without breaking tests
+
+Repeat 🔁
+
+Why TDD?
+
+✔ Better design
+✔ Fewer bugs
+✔ Confidence while refactoring
+✔ High test coverage
+✔ Cleaner, modular code
+
+Q1: Why write tests before code?
+Answer:
+It clarifies requirements, improves design, and ensures code is testable.
+
+Q2: Does TDD slow development?
+Answer:
+Initially yes, but overall it speeds up development by reducing bugs and rework.
+
+Q3: What should be tested in TDD?
+Answer:
+Business logic, edge cases, and critical paths — not UI or framework code.
+
+Q4: Can TDD be used with Microservices?
+Answer:
+Yes. Unit tests for services and integration tests for service interactions.
+

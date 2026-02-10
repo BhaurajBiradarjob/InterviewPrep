@@ -1,0 +1,80 @@
+Microservices : An application is built as a collection of small, independent services, each service doing one specific business function.
+
+DDD -> Domain Driven Development
+
+Simple Example (E-commerce)
+
+Microservices could be:
+User Service
+Product Service
+Order Service
+Payment Service
+Notification Service
+
+Benefits of Microservices
+
+✅ Scalability
+✅ Faster development
+✅ Fault isolation
+✅ Tech flexibility
+✅ Team autonomy
+
+Challenges (Important!)
+
+⚠️ Network latency
+⚠️ Data consistency
+⚠️ Monitoring complexity
+⚠️ DevOps overhead
+⚠️ Debugging is harder
+
+Monolith : single project, single deployment
+
+Pros
+
+✔ Simple to build
+✔ Easy debugging
+✔ Fewer moving parts
+
+❌ Cons
+
+❌ Hard to scale
+❌ One bug affects entire app
+❌ Slow deployments
+
+Microservices Interview Questions 🧠
+Q1: Why Microservices?
+👉 Scalability, flexibility, independent deployment.
+
+Q2: Microservices vs Monolith?
+👉 Monolith = single app, Microservices = multiple independent services.
+
+Q3: Why separate DB per service?
+👉 Loose coupling and service autonomy.
+
+Q4: What is API Gateway?
+👉 Single entry point handling security, routing, throttling.
+
+Q5: How do services communicate?
+👉 REST (sync) and messaging (async).
+
+Q6: What is eventual consistency?
+👉 Data may not be immediately consistent across services.
+
+Q7: What are challenges?
+👉 Monitoring, latency, data consistency, DevOps complexity.
+
+Q8: How do you handle failures?
+👉 Circuit breaker, retries, timeouts.
+
+Q9: What is CQRS in Microservices?
+👉 Separate read/write models inside services.
+
+Q10: Azure services used?
+👉 AKS, APIM, Service Bus, Cosmos DB.
+
+5️⃣ Final Takeaway 🧠
+
+✔ Monolith → simple
+✔ Microservices → scalable
+✔ API Gateway → must-have
+✔ Azure + .NET → powerful combo

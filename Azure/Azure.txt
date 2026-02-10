@@ -1,0 +1,316 @@
+Azure Basics (Must-know)
+1. What is Microsoft Azure?
+Answer:
+Azure is a cloud computing platform that provides services like compute, storage, networking, databases, security, and AI over the internet.
+
+2. What are the main cloud service models?
+Answer:
+IaaS – Virtual Machines, VNets
+PaaS – App Service, Azure SQL
+SaaS – Office 365, Azure DevOps
+
+3. What is a Resource Group?
+Answer:
+A logical container that holds related Azure resources and helps manage lifecycle, permissions, and cost.
+
+4. What is Azure Region & Availability Zone?
+Answer:
+Region: Geographic area (e.g., East US)
+Availability Zone: Physically separate datacenters inside a region for high availability
+
+
+Compute Services
+5. What is Azure Virtual Machine?
+Answer:
+An IaaS service that provides scalable compute with full OS control.
+
+6. VM Scale Set?
+Answer:
+A group of identical VMs that automatically scale in/out based on demand.
+
+7. Azure App Service?
+Answer:
+A PaaS service to host web apps, REST APIs, and backend services without managing servers.
+
+8. Azure Functions?
+Answer:
+Serverless compute that runs code based on events and charges only for execution time.
+
+Storage Services
+9. Types of Azure Storage?
+Answer:
+Blob Storage – Unstructured data
+File Storage – File shares
+Queue Storage – Messaging
+Table Storage – NoSQL key-value
+
+10. What is Azure Blob Storage used for?
+Answer:
+Storing images, videos, logs, backups, and large unstructured data.
+
+11. Azure Disk vs Blob?
+Answer:
+Disk: Attached to VM
+Blob: Standalone object storage
+
+Networking (Very Important)
+12. What is VNet?
+Answer:
+A private network in Azure that allows resources to communicate securely.
+
+13. NSG vs ASG?
+Answer:
+NSG: Filters traffic by IP/Port
+ASG: Filters traffic by application group
+
+14. Azure Load Balancer vs Application Gateway?
+Answer:
+Load Balancer: Layer 4 (TCP/UDP)
+App Gateway: Layer 7 (HTTP/HTTPS, SSL, WAF)
+
+15. What is Azure Traffic Manager?
+Answer:
+DNS-based load balancing across regions.
+
+Security & Identity
+19. Azure Active Directory (Entra ID)?
+Answer:
+Identity and access management service for authentication and authorization.
+
+20. RBAC?
+Answer:
+Role-Based Access Control to manage permissions in Azure.
+
+21. Managed Identity?
+Answer:
+Provides Azure resources a secure identity to access other Azure services without storing credentials.
+
+22. Azure Key Vault?
+Answer:
+Secure storage for secrets, certificates, and encryption keys.
+
+🔹 DevOps & Monitoring
+23. Azure DevOps?
+Answer:
+Provides Repos, Pipelines, Boards, Artifacts for CI/CD.
+
+24. Azure Monitor?
+Answer:
+Collects metrics and logs for monitoring Azure resources.
+
+25. Application Insights?
+Answer:
+APM tool for monitoring application performance and failures.
+
+🔹 Containers & Microservices
+26. Docker vs AKS?
+Answer:
+Docker: Container platform
+AKS: Kubernetes managed service
+
+27. Azure API Management?
+Answer:
+API Gateway service for security, throttling, versioning, and monitoring.
+
+28. Azure Service Bus?
+Answer:
+Enterprise messaging service for async communication.
+
+🔹 Architecture & Design
+29. What is High Availability in Azure?
+Answer:
+Using zones, load balancers, and redundancy to avoid downtime.
+
+30. What is Disaster Recovery?
+Answer:
+Restoring services after major failures using backups and secondary regions.
+
+🔹 Cost & Governance
+31. Azure Pricing Models?
+Answer:
+Pay-as-you-go
+Reserved Instances
+Spot VMs
+
+32. Azure Policy?
+Answer:
+Enforces organizational standards and compliance.
+
+33. Azure Blueprints?
+Answer:
+Defines repeatable environments with policies, RBAC, and resources.
+
+🔹 Scenario-Based Questions (Very Important)
+34. How do you secure secrets in Azure?
+👉 Azure Key Vault + Managed Identity
+
+35. How to expose microservices securely?
+👉 API Management + Azure AD + Private endpoints
+
+36. How do you scale an application?
+👉 App Service autoscale / VMSS / AKS HPA
+
+37. How do you monitor failures?
+👉 Application Insights + Azure Monitor alerts
+
+38. What is Azure Functions and when do you use it?
+Answer:
+Azure Functions is a serverless compute service used to run code based on events like HTTP requests, timers, or Service Bus messages.
+Used for lightweight, event-driven logic
+
+Q4. Logic Apps vs Azure Functions?
+Answer:
+Logic Apps → Low-code workflow integration
+Azure Functions → Code-based logic
+
+Q5. How does Service Bus integrate with APIs?
+Answer:
+APIs publish messages to Service Bus for asynchronous processing, decoupling services and improving reliability.
+
+Q6. What is Azure Key Vault?
+Answer:
+Azure Key Vault securely stores secrets, keys, and certificates and controls access using RBAC or access policies.
+
+Q7. How do you access Key Vault from an App Service?
+Answer:
+Using Managed Identity, without storing credentials in code.
+
+Q8. What is key/secret rotation?
+Answer:
+Regularly updating secrets or keys to reduce security risks, often automated using Key Vault + pipelines.
+
+Q9. What is Azure Blob Storage?
+Answer:
+Used to store unstructured data like files, images, backups, logs.
+
+Q10. Blob containers vs blobs?
+Answer:
+Container → Folder
+Blob → File
+
+Q11. What is App Registration?
+Answer:
+Represents an application in Azure AD (Entra ID) for authentication and authorization.
+
+Q13. What is Application Insights?
+Answer:
+Monitors application performance, failures, dependencies, and logs.
+
+Q14. How do you monitor API health?
+Answer:
+Health check endpoints
+Azure Monitor alerts
+Application Insights availability tests
+
+Q15. What is App Service?
+Answer:
+A PaaS service to host Web Apps, APIs, and background services without managing servers.
+
+Q16. Azure Service Bus vs Event Grid?
+Answer:
+Service Bus → Reliable messaging, queues, topics
+Event Grid → Event routing and notification
+
+Q17. Queue vs Topic?
+Answer:
+Queue → One consumer
+Topic → Multiple subscribers
+
+Q18. What is dead-letter queue?
+Answer:
+Stores messages that cannot be processed due to errors or retries exceeded.
+
+🔹 4. Azure App Configuration (Feature Manager)
+Q19. What is Azure App Configuration?
+Answer:
+Centralized service to manage application settings and feature flags.
+
+Q20. What is Feature Flag / Feature Manager?
+Answer:
+Enables or disables features without redeploying code.
+
+Q21. Real use-case of feature flags?
+Answer:
+Gradual rollout, A/B testing, emergency feature disable.
+
+🔹 5. CI/CD (Pipelines & YAML)
+Q22. What is CI/CD?
+Answer:
+CI → Build & test code automatically
+CD → Deploy code automatically
+
+Q23. Azure DevOps Pipeline types?
+Answer:
+Build pipeline
+Release pipeline
+(YAML pipelines combine both)
+
+Q24. What is YAML pipeline?
+Answer:
+Pipeline defined as code using YAML for builds, tests, and deployments.
+
+Q25. How do you store secrets in pipelines?
+Answer:
+Using Variable Groups + Key Vault integration.
+
+🔹 6. Azure SQL (Backend + Profiler)
+Q26. Azure SQL vs SQL Server on VM?
+Answer:
+Azure SQL → Managed PaaS
+SQL on VM → Full control, IaaS
+
+Q27. What is SQL Profiler used for?
+Answer:
+To trace queries, identify slow queries, and troubleshoot performance issues.
+
+Q28. How do you optimize SQL performance?
+Answer:
+Indexes, query optimization, execution plans, proper schema design.
+
+🔹 7. AI Tools (GitHub Copilot)
+Q29. What is GitHub Copilot?
+Answer:
+AI-powered coding assistant that suggests code, tests, and documentation inside IDEs.
+
+Q30. How do you use Copilot effectively?
+Answer:
+For boilerplate code, refactoring, test generation, and faster development—not blind copy.
+
+🔹 8. ADF (Nice to have)
+Q31. What is Azure Data Factory?
+Answer:
+ETL service to extract, transform, and load data between systems.
+
+Q32. Pipeline vs Dataset in ADF?
+Answer:
+Pipeline → Workflow
+Dataset → Data structure definition
+
+🔹 9. Cosmos DB (Nice to have)
+Q33. What is Cosmos DB?
+Answer:
+Globally distributed NoSQL database with low latency and multiple APIs.
+
+Q34. What is RU/s?
+Answer:
+Request Units per second—measure of throughput capacity.
+
+🔹 10. Azure Blob Storage with SFTP
+Q35. What is SFTP in Azure Blob Storage?
+Answer:
+Allows secure file transfer using SFTP protocol directly to Blob containers.
+
+Q36. Use case for SFTP Storage?
+Answer:
+Partner integrations, legacy systems, secure file uploads/downloads.
+
+🔹 11. Scenario-Based (Very Important)
+
+Q38. How do you handle async processing?
+👉 Service Bus queues/topics
+
+Q39. How do you manage config across environments?
+👉 Azure App Configuration + Feature Flags
+
+Q40. How do you monitor production issues?
+👉 App Insights + Azure Monitor + Alerts

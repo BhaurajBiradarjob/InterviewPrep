@@ -1,0 +1,240 @@
+Entity Framework - It allows developers to work with databases using C# objects instead of writing SQL queries manually.
+EF acts as a bridge between your C# code and the database.
+
+ORM -> Object Relational Mapping -> Mapping Model and Data Access layer
+
+Model -> Object
+DAL -> Relational
+
+Mapping between Model (Object) and DAL (Relational) -> ORM
+
+Without EF: SELECT * FROM Employees WHERE Id = 1;
+
+With EF: var emp = context.Employees.FirstOrDefault(e => e.Id == 1);
+
+Benefits
+
+✔ No need to write complex SQL
+✔ Faster development
+✔ Less boilerplate code
+✔ Strongly typed (compile-time checking)
+✔ Easier maintenance
+
+1. C# Entity Classes → represent database tables
+2. DbContext → manages DB connection & operations
+3. EF converts LINQ queries to SQL
+4. Database executes SQL
+5. Results mapped back to C# objects
+
+
+1. Entity - A POCO class that represents a table.
+public class Employee
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public decimal Salary { get; set; }
+}
+
+2. DbContext - Acts as a session with the database.
+public class AppDbContext : DbContext
+{
+    public DbSet<Employee> Employees { get; set; }
+}
+👉 DbSet<Employee> = Employees table
+
+3. LINQ - Used to query data.
+var employees = context.Employees
+                       .Where(e => e.Salary > 50000)
+                       .ToList();
+					   
+EF vs ADO.NET (Interview Favorite)
+
+| Feature           | Entity Framework | ADO.NET   |
+| ----------------- | ---------------- | --------- |
+| Coding Style      | Object-oriented  | SQL-based |
+| Complexity        | Low              | High      |
+| Development Speed | Fast             | Slower    |
+| Control over SQL  | Less             | Full      |
+| Learning Curve    | Easy             | Steep     |
+
+Common Interview Questions
+
+Q: Does EF eliminate SQL completely?
+➡ No. EF generates SQL internally. You can still use raw SQL if needed.
+
+Q: Is EF slow?
+➡ Slight overhead, but optimized and acceptable for most apps.
+
+Q: Can EF handle transactions?
+➡ Yes, it supports transactions(COMMIT & ROLLBACK).
+
+15.EF Core - performance improvements?
+1. Use AsNoTracking() for Read-Only Queries
+Why?
+
+EF Core tracks entities by default
+Tracking costs memory + CPU
+
+Use when:Data is read-only
+var users = await _context.Users
+    .AsNoTracking()
+    .ToListAsync();
+
+2. Fetch Only Required Columns
+var users = await _context.Users
+    .Select(u => new UserDto
+    {
+        Id = u.Id,
+        Name = u.Name
+    })
+    .ToListAsync();
+📉 Reduces:
+
+Network traffic
+Memory usage
+Deserialization cost
+
+3. Avoid N+1 Queries (Use Include / Explicit Loading) : Or use projection (often faster than Include).
+var orders = await _context.Orders
+    .Include(o => o.Items)
+    .ToListAsync();
+
+4. Use Proper Indexing in Database
+EF Core performance ≠ EF only.
+
+Add indexes for:
+
+Foreign keys
+Search columns
+Filter conditions
+
+modelBuilder.Entity<User>()
+    .HasIndex(u => u.Email);
+
+5. Use Compiled Queries (High-Traffic APIs)
+LINQ queries are compiled each time
+
+6. Use Pagination (Never Load Huge Data) and filtering
+var users = await _context.Users
+    .Skip(page * size)
+    .Take(size)
+    .ToListAsync();
+7. Disable Lazy Loading (Often Harmful)
+Why?
+
+Causes unexpected DB calls
+Leads to N+1 problems
+
+✅ Prefer:
+
+Eager loading
+Projection
+
+8, Use Bulk Operations (Insert / Update)
+❌ Slow
+foreach (var item in items)
+{
+    _context.Add(item);
+}
+await _context.SaveChangesAsync();
+
+✅ Faster
+
+Use AddRange
+Use third-party bulk libraries (EFCore.BulkExtensions)
+
+9. Use Raw SQL / Stored Procedures (When Needed)
+var users = await _context.Users
+    .FromSqlRaw("EXEC GetActiveUsers")
+    .AsNoTracking()
+    .ToListAsync();
+
+Use when:
+
+Very complex queries
+Performance-critical paths
+
+When EF query is slow or wrong:
+
+View generated SQL
+Run SQL directly in DB
+Check execution plan
+Verify indexes
+Use AsNoTracking
+Avoid unnecessary Include
+Check N+1 problem
+Inspect EntityState
+
+22.EF how do you debug?
+Debugging Entity Framework usually means:
+
+Understanding what SQL is generated
+Finding performance issues
+Detecting wrong data / wrong joins
+Fixing tracking / state issues
+Identifying SaveChanges failures
+
+✅ 1. Use breakpoints & inspect objects
+
+Put breakpoint before SaveChangesAsync()
+
+Inspect:
+
+Entity values
+Navigation properties
+Nulls / wrong values
+
+✅ 2. Check EntityState
+
+Very common bug.
+
+var state = _dbContext.Entry(user).State;
+
+
+States:
+
+Added
+Modified
+Unchanged
+Deleted
+Detached
+
+👉 Many bugs happen because entity is Detached.
+
+3. Enable EF logging
+4. Identify N+1 problem
+5. Use AsNoTracking() for reads
+6. Check indexes at DB level
+7. Debugging SaveChanges errors
+Common exceptions
+
+DbUpdateException
+DbUpdateConcurrencyException
+try
+{
+    await _dbContext.SaveChangesAsync();
+}
+catch (DbUpdateException ex)
+{
+    var inner = ex.InnerException?.Message;
+}
+Check:
+
+Foreign key violations
+Unique constraint failures
+Null value errors
+
+8. Interceptors (EF Core)
+public class SqlInterceptor : DbCommandInterceptor
+{
+    public override InterceptionResult<DbDataReader> ReaderExecuting(...)
+    {
+        // log SQL and time
+    }
+}
+Used for:
+
+Query performance tracking
+Auditing
+Diagnostics
+

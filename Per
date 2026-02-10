@@ -1,0 +1,968 @@
+What is ASP.NET Core Pipeline?
+
+API Request Lifecycle (ASP.NET Core)
+1. Client Sends HTTP Request
+2. Web Server (Kestrel / IIS)
+3. Middleware Pipeline Begins
+Request
+ ↓
+Exception Middleware
+ ↓
+Routing Middleware
+ ↓
+Authentication Middleware
+ ↓
+Authorization Middleware
+ ↓
+Endpoint Middleware
+4. Routing (Endpoint Selection)
+5. Authentication
+6. Authorization
+7. Model Binding -> Reads request data, Converts JSON → C# object
+8. Model Validation -> Uses Data Annotations
+[Required]
+[StringLength(50)]
+public string Name { get; set; }
+If invalid:
+400 Bad Request
+{
+  "errors": { ... }
+}
+9. Filters Execution
+10. Controller Action Executes
+11. Response Travels Back Through Middleware
+12. Server Sends HTTP Response
+
+Client → Kestrel → Middleware → Routing → Auth → Authorization → Model Binding → Filters → Controller → Response → Client
+
+2. Have you written any middleware?
+Yes, I have written custom middleware in ASP.NET Core.
+
+What is Middleware? (Quick recap)
+Middleware is a component in the ASP.NET Core request pipeline that:
+
+Handles HTTP requests
+Can inspect / modify the request
+Can call the next middleware
+Can inspect / modify the response
+
+Request → Middleware → Controller → Middleware → Response
+
+Middleware I Have Written 
+1. Global Exception Handling Middleware
+Used to:
+
+Catch unhandled exceptions
+Return consistent error responses
+Log errors
+
+public class ExceptionMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public ExceptionMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        catch (Exception ex)
+        {
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsJsonAsync(new
+            {
+                Message = "Something went wrong"
+            });
+        }
+    }
+}
+
+2. Logging Middleware
+Used to:
+
+Log request & response
+Measure execution time
+
+var start = Stopwatch.StartNew();
+await _next(context);
+start.Stop();
+_logger.LogInformation($"Request took {start.ElapsedMilliseconds}ms");
+
+3. Authentication / Authorization Middleware
+
+Used to:
+Validate JWT tokens
+Extract user claims
+Reject unauthorized requests
+
+4. CORS / Header Middleware
+
+Used to:
+Add security headers
+Modify request headers
+
+How I Register Middleware : 
+app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseExceptionMiddleware();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+Why Write Custom Middleware?
+
+✔ Reusability
+✔ Centralized logic
+✔ Cleaner controllers
+✔ Performance-friendly
+✔ Easy to maintain
+
+Yes, I’ve written custom middleware for exception handling, logging, authentication, and request tracing in ASP.NET Core
+
+What are Filters?
+Filters are components in ASP.NET Core MVC that run before or after controller actions.
+
+Request
+ → Middleware
+   → Routing
+     → Filters
+       → Controller Action
+     → Filters
+ → Middleware
+Response
+✔ Filters run inside MVC pipeline
+
+Types of Filters
+1. Authorization Filters : Authorization checks
+IAuthorizationFilter -> contains OnAuthorization method
+
+[Authorize]
+
+2. Resource Filters : Run before model binding
+Used for: Caching, Short-circuiting requests
+
+IResourceFilter -> contains OnResultExecuted, OnResultExecuting method
+
+3. Action Filters : Run before & after action method
+Used for: Logging, Validation, Auditing
+
+IActionFilter -> contains OnActionExecuted, OnActionExecuting method
+IAsyncActionFilter
+
+4. Exception Filters : Run when exception occurs
+Used for: Handling exceptions in controllers
+
+IExceptionFilter -> contains OnException method
+
+5. Result Filters : Run before & after result execution
+Used for: Modifying response
+
+IResultFilter -> contains OnResultExecuted, OnResultExecuting method
+
+Example: Action Filter
+public class LoggingFilter : IActionFilter
+{
+    public void OnActionExecuting(ActionExecutingContext context)
+    {
+        // Before action
+    }
+
+    public void OnActionExecuted(ActionExecutedContext context)
+    {
+        // After action
+    }
+}
+[ServiceFilter(typeof(LoggingFilter))]
+public IActionResult Get() { }
+
+| Feature             | Middleware          | Filters                       |
+| ------------------- | ------------------- | ----------------------------- |
+| Scope               | Global              | MVC only                      |
+| Runs for            | All requests        | Controller actions            |
+| Pipeline position   | Before routing      | After routing                 |
+| HTTP context access | Full                | Limited to MVC                |
+| Use cases           | Auth, CORS, logging | Validation, caching, auditing |
+| Can short-circuit   | Yes                 | Yes                           |
+| Dependency on MVC   | ❌ No                | ✅ Yes                         |
+
+4. What is the advantage of Glabal middleware?
+Global middleware is middleware that is registered once and runs for every incoming HTTP request.
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
+✅ Advantages of Global Middleware
+1. Centralized Cross-Cutting Logic
+You write the logic once and it applies everywhere.
+
+Examples:
+
+Exception handling
+Authentication
+Logging
+Correlation IDs
+CORS
+Security headers
+
+✔ No duplicate code
+✔ Consistent behavior across APIs
+
+2. Runs for Every Request (Not Just Controllers)
+Global middleware runs for:
+
+APIs
+MVC controllers
+Minimal APIs
+Static files
+Health checks
+
+👉 Filters cannot do this.
+
+3. Cleaner Controllers
+
+Controllers focus only on:
+
+Business logic
+Request/response handling
+
+4. Early Request Short-Circuiting
+Middleware can stop requests before they hit controllers.
+
+Examples:
+Invalid token
+Blocked IP
+Maintenance mode
+Rate limiting
+
+context.Response.StatusCode = 401;
+return;
+
+5. Better Performance for Infrastructure Concerns
+Middleware:
+Runs earlier
+Has less overhead than MVC filters
+
+Ideal for:
+Authentication
+Logging
+Request validation
+
+6. Full Access to HTTP Context
+
+Global middleware has access to:
+
+Headers
+Body
+Cookies
+Path
+Response stream
+
+This makes it ideal for:
+
+Custom headers
+Request transformations
+Security enforcement
+
+7. Consistent Error Handling
+
+With global exception middleware:
+
+Same error format everywhere
+Centralized logging
+Easy monitoring & alerting
+
+We used global middleware for exception handling, logging, authentication, and correlation ID generation. 
+This allowed us to centralize cross-cutting concerns, keep controllers clean, and ensure consistent behavior and error responses across all APIs.
+
+Global middleware provides centralized, reusable handling of cross-cutting concerns for all requests, improving consistency, performance, and maintainability.
+
+Global middleware is best suited for infrastructure-level concerns, while filters should be used for MVC-specific behavior.
+
+What is Dependency Injection?
+
+Dependency Injection is a design pattern where:
+An object does not create its dependencies Instead, dependencies are provided (injected) from outside
+
+📌 In ASP.NET Core, DI is built-in (no extra framework needed).
+
+Why DI is Important?
+
+✔ Loose coupling
+✔ Easy testing (mocking)
+✔ Better maintainability
+✔ Follows SOLID principles
+✔ Enterprise-ready architecture
+
+How DI Works Internally (Flow)
+App starts
+Services registered in container
+Request comes in
+Container creates controller
+Injects required dependencies
+Disposes based on lifetime
+
+Types of Dependency Injection
+1. Constructor Injection (Recommended ✅)
+public class UserController : ControllerBase
+{
+    private readonly IUserService _service;
+
+    public UserController(IUserService service)
+    {
+        _service = service;
+    }
+}
+✔ Most common
+✔ Clear dependencies
+✔ Best practice
+
+2. Method Injection : Use sparingly.
+public IActionResult Get([FromServices] ILogger logger)
+
+3. Property Injection ❌ Not supported by default.
+
+Service Lifetimes (VERY IMPORTANT 🔥)
+1. Transient
+services.AddTransient<IService, Service>();
+
+New instance every time
+Lightweight, stateless services
+
+2. Scoped (Most Used in Web Apps)
+services.AddScoped<IService, Service>();
+
+One instance per HTTP request
+Perfect for DB contexts
+
+📌 DbContext should always be Scoped
+
+3. Singleton
+services.AddSingleton<IService, Service>();
+
+Single instance for entire app
+Shared across requests
+⚠️ Must be thread-safe
+
+| Lifetime  | Instance        |
+| --------- | --------------- |
+| Transient | Every injection |
+| Scoped    | Per request     |
+| Singleton | Per application |
+
+5. What is a Clustered Index?
+
+A clustered index determines how the data is physically stored on disk or table.
+👉 In a table with a clustered index:
+Rows are stored in the order of the clustered index key
+The table data is the index
+
+When Clustered Index Helps Most
+
+✔ Large tables
+✔ Range queries
+✔ Sorting
+✔ Reporting queries
+
+Interview One-Liners (💥 Must Say)
+“Clustered index defines physical order of data”
+“Only one clustered index per table”
+“Leaf nodes contain actual data”
+“Primary key is not always clustered”
+“Good clustered index improves range queries”
+A clustered index determines the physical order of rows in a table and stores the actual data at the leaf level of the index.
+
+Example (Very Important ⭐)
+Table: Employees
+EmpId	Name	Salary
+
+If EmpId is a clustered index:
+
+Rows are stored on disk sorted by EmpId
+
+Querying by EmpId is very fast
+
+CREATE CLUSTERED INDEX IX_Employees_EmpId
+ON Employees(EmpId);
+
+Clustered Index vs Heap
+🔹 Heap (No clustered index)
+
+Data stored unordered
+SQL Server scans entire table
+
+🔹 Clustered Index
+
+Data stored in sorted order
+Faster searches, range queries
+
+👉 By default:
+
+Primary Key → creates clustered index (unless specified otherwise)
+
+Why only one Clustered Index?
+
+Because:
+
+Table rows can be physically ordered only once
+Multiple orderings = impossible at storage level
+
+When should you use Clustered Index?
+
+Best columns:
+
+✔ Primary Key
+✔ Unique
+✔ Sequential values
+✔ Frequently used in WHERE, JOIN, ORDER BY, BETWEEN
+
+Examples:
+
+Id
+CreatedDate
+OrderId
+
+When NOT to use Clustered Index on a column?
+
+Avoid:
+
+❌ Frequently updated columns
+❌ Random values (GUID without sequential)
+❌ Very wide columns
+
+Why?
+
+Causes page splits
+Performance degradation
+
+| Feature         | Clustered Index          | Non-Clustered Index |
+| --------------- | ------------------------ | ------------------- |
+| Physical order  | Yes                      | No                  |
+| Leaf nodes      | Actual data              | Pointers to data    |
+| Count per table | 1                        | Multiple            |
+| Storage         | Table itself             | Separate structure  |
+| Speed           | Faster for range queries | Faster for lookups  |
+
+SELECT * FROM Orders
+WHERE OrderDate BETWEEN '2024-01-01' AND '2024-01-31';
+
+✔ If OrderDate is clustered → very fast
+❌ If heap → full table scan
+
+Can we have a table without a clustered index?
+✔ Yes → it’s called a Heap
+
+Can primary key be non-clustered?
+✔ Yes (explicitly specify)
+PRIMARY KEY NONCLUSTERED
+
+A clustered index determines the physical order of data in a table. It stores the actual data at the leaf level, allows only one per table, and is best suited for primary keys and range 
+queries.
+
+6. What are Standalone Components?
+A Standalone Component is an Angular component that does NOT need to be declared in an NgModule.
+
+👉 Earlier:
+Every component had to belong to a module
+
+👉 Now:
+A component can stand alone
+It can directly manage its own dependencies
+
+Standalone components are Angular components that can be used without declaring them inside an NgModule.
+
+Module : 
+@NgModule({
+  declarations: [UserComponent],
+  imports: [CommonModule],
+})
+export class UserModule {}
+
+❌ More boilerplate
+❌ Harder to manage large apps
+
+Standalone Component (Angular 14+)
+@Component({
+  selector: 'app-user',
+  standalone: true,
+  imports: [CommonModule],
+  template: `<h2>User Component</h2>`
+})
+export class UserComponent {}
+✅ No module
+✅ Self-contained
+✅ Cleaner architecture
+
+| Feature               | NgModule-based | Standalone      |
+| --------------------- | -------------- | --------------- |
+| Requires module       | Yes            | No              |
+| Boilerplate           | More           | Less            |
+| Dependency management | In module      | In component    |
+| Lazy loading          | Module-based   | Component-based |
+| Modern Angular        | ❌              | ✅               |
+
+❓ Are NgModules deprecated?
+➡️ No. They are still supported.
+
+❓ Can standalone and module-based components coexist?
+➡️ Yes, Angular fully supports hybrid apps.
+
+❓ Do standalone components improve performance?
+➡️ Yes, better tree-shaking and lazy loading.
+
+Standalone components in Angular allow developers to create self-contained components without NgModules, simplifying architecture, reducing boilerplate, and enabling better lazy loading.
+
+7. What are Components and Directives?
+A Component is a building block of the UI.
+
+👉 It:
+Controls a view (HTML)
+Has logic (TypeScript)
+Uses CSS for styling
+
+@Component({
+  selector: 'app-user',
+  template: `<h2>Hello {{name}}</h2>`
+})
+export class UserComponent {
+  name = 'John';
+}
+
+📌 Components:
+
+Always have a template
+Always display something on the screen
+
+What is a Directive? 
+A Directive is used to change the behavior or appearance of an existing DOM element.
+
+👉 It does not create UI
+👉 It modifies UI
+A directive adds behavior to an existing element.
+
+Types of Directives (Very Important ⭐)
+
+1. Structural Directives : Change the DOM structure
+Examples:
+
+*ngIf
+*ngFor
+*ngSwitch
+
+<div *ngIf="isLoggedIn">Welcome</div>
+👉 Adds or removes elements from DOM
+
+2. Attribute Directives : Change appearance or behavior
+Examples:
+
+ngClass
+ngStyle
+Custom directives
+
+<div [ngClass]="{ active: isActive }"></div>
+
+Custom Directive Example
+@Directive({
+  selector: '[appHighlight]'
+})
+export class HighlightDirective {
+  constructor(el: ElementRef) {
+    el.nativeElement.style.backgroundColor = 'yellow';
+  }
+}
+
+<p appHighlight>Highlighted text</p>
+
+| Feature              | Component    | Directive    |
+| -------------------- | ------------ | ------------ |
+| Has template         | ✅ Yes        | ❌ No         |
+| Creates UI           | ✅ Yes        | ❌ No         |
+| Modifies existing UI | ❌            | ✅            |
+| Decorator            | `@Component` | `@Directive` |
+| Reusability          | UI blocks    | Behavior     |
+
+
+@Component === @Directive + Template
+A component is a directive with a template.
+
+Component : 
+
+Header
+Footer
+Login form
+Dashboard
+
+Directive :
+
+Permission checks
+Auto focus
+Input formatting
+Role-based UI hiding
+
+“Components manage views; directives modify existing elements.”
+“Structural directives change DOM structure.”
+“Attribute directives change appearance or behavior.”
+“Every component is a directive with a template.”
+
+❓ Can a directive have a template?
+❌ No
+
+❓ Can a component exist without HTML?
+❌ No
+
+❓ Which is more reusable?
+✔ Directive (behavior reuse)
+
+Component → What you SEE
+Directive → How it BEHAVES
+
+8. How do make an Angular Component Singleton?
+👉 Angular components themselves are NOT meant to be singletons.
+👉 Services are what Angular makes singleton — not components.
+
+Why Components Are NOT Singletons
+
+Components are created and destroyed by Angular
+Routing, *ngIf, lazy loading → new instances
+Angular lifecycle controls component instances
+Even if a component appears once, Angular does not guarantee singleton behavior.
+
+The CORRECT Way: Use a Singleton Service ⭐
+@Injectable({
+  providedIn: 'root'
+})
+export class UserStateService {
+  username = 'John';
+}
+
+✔ providedIn: 'root' → Singleton for entire app
+
+Inject service into component
+@Component({
+  selector: 'app-profile',
+  template: `{{ state.username }}`
+})
+export class ProfileComponent {
+  constructor(public state: UserStateService) {}
+}
+
+
+Angular components cannot be singletons because they are managed by the framework lifecycle. 
+To achieve singleton behavior or shared state, we use a singleton service (providedIn: 'root') and inject it into the component.
+
+What is providedIn?
+providedIn tells Angular where a service should be registered in the Dependency Injection hierarchy.
+
+All possible values of providedIn
+
+Angular supports 4 main values:
+
+'root'
+'platform'
+'any'
+null (or not specified)
+
+providedIn: 'root' (Most common ⭐)
+What it means
+
+Service is registered in the root injector
+Singleton for entire application
+
+Characteristics
+
+✔ One instance across app
+✔ Shared between all modules
+✔ Tree-shakable
+✔ Recommended default
+
+Use cases
+
+Auth
+API services
+Shared state
+Logging
+
+providedIn: 'platform'
+What it means
+
+Service is shared across multiple Angular apps
+Registered at platform level
+
+✔ Single instance across multiple apps
+
+providedIn: 'any' (Advanced ⚠️)
+What it means
+
+One instance per lazy-loaded module
+Shared within eager-loaded modules
+
+Eager modules → share one instance
+Lazy modules → get their own instance
+
+providedIn: null or Not Specified
+What it means
+
+Angular does not auto-register service
+You must manually add it to providers
+
+
+| Value      | Scope           | Singleton? | Tree-shakable | Common? |
+| ---------- | --------------- | ---------- | ------------- | ------- |
+| `root`     | App-wide        | Yes        | Yes           | ⭐⭐⭐⭐⭐   |
+| `platform` | Multi-app       | Yes        | Yes           | ⭐       |
+| `any`      | Per lazy module | Sometimes  | Yes           | ⭐⭐      |
+| `null`     | Manual          | Depends    | No            | ⭐⭐      |
+
+root → “Singleton across the app”
+platform → “Shared across multiple Angular apps”
+any → “New instance per lazy module”
+null → “Manual provider registration”
+
+9. How would you document your APIs? 
+I Document APIs Using Swagger. 
+In ASP.NET Core, Swagger is the default and recommended approach.
+
+What is Swagger?
+
+Swagger (OpenAPI) is:
+A machine-readable API specification
+Auto-generated from code
+Interactive UI to test APIs
+
+I primarily document my APIs using Swagger/OpenAPI in ASP.NET Core because it’s auto-generated, always in sync with code, and easy for consumers to test.
+In addition, I maintain a README or Wiki to explain authentication flows, error handling, rate limits, and versioning.
+For collaboration, I also share Postman collections so frontend and QA teams can work independently.
+
+10. Any issues implementing JWT tolens?
+1. Token Expiry Issues (401 errors suddenly)
+Problem:
+Users were getting 401 Unauthorized even though they were logged in.
+JWT access tokens expired (e.g., 15 minutes).
+
+Why it happens:
+JWT is stateless → server does NOT track sessions.
+Once expired, token is invalid.
+
+Solution:
+Implemented Refresh Token mechanism
+Short-lived Access Token (10–15 mins)
+Long-lived Refresh Token (7–30 days)
+Client silently calls /refresh-token when access token expires
+
+2. Secure Storage of JWT on Client
+
+| Storage              | Risk     | Used When         |
+| -------------------- | -------- | ----------------- |
+| localStorage         | XSS      | Avoid if possible |
+| sessionStorage       | XSS      | Slightly better   |
+| **HttpOnly Cookies** | ✅ Secure | **Best practice** |
+
+Solution I used:
+
+Stored access token in memory
+Stored refresh token in HttpOnly + Secure cookie
+
+3. Token Theft / Replay Attacks
+Problem:
+If JWT is stolen, attacker can use it till expiry.
+
+Mitigation steps:
+Very short access token lifetime
+HTTPS enforced (RequireHttpsMetadata)
+Added Audience, Issuer, SigningKey validation
+Used rotating refresh tokens
+
+4. Logout Not Working Properly
+Problem:
+
+JWT is stateless → server can’t “delete” a token
+
+Solutions:
+
+On logout:
+Delete refresh token from DB
+Clear HttpOnly cookie
+Optional:
+Maintain token blacklist (for critical systems)
+
+✅ Logout became effective immediately.
+
+5. Large JWT Payload (Performance Issue)
+Problem:
+
+JWT size increased (roles, permissions, claims)
+Increased request header size → performance hit
+
+Solution:
+
+Kept JWT minimal
+
+Stored only:
+
+UserId
+Role
+Loaded permissions from cache/DB if needed
+
+✅ Faster requests + smaller tokens.
+
+6. Refresh Token Reuse Attack
+
+Problem:
+Same refresh token used multiple times
+
+Solution (Best Practice):
+Rotate refresh tokens
+
+On refresh:
+Invalidate old refresh token
+Issue a new one
+If reuse detected → revoke all tokens
+
+✅ Improved security drastically.
+
+11. What is the cycle of API request?
+API Request Lifecycle (ASP.NET Core)
+1. Client Sends HTTP Request
+2. Web Server (Kestrel / IIS)
+3. Middleware Pipeline Begins
+Request
+ ↓
+Exception Middleware
+ ↓
+Routing Middleware
+ ↓
+Authentication Middleware
+ ↓
+Authorization Middleware
+ ↓
+Endpoint Middleware
+4. Routing (Endpoint Selection)
+5. Authentication
+6. Authorization
+7. Model Binding -> Reads request data, Converts JSON → C# object
+8. Model Validation -> Uses Data Annotations
+[Required]
+[StringLength(50)]
+public string Name { get; set; }
+If invalid:
+400 Bad Request
+{
+  "errors": { ... }
+}
+9. Filters Execution
+10. Controller Action Executes
+11. Response Travels Back Through Middleware
+12. Server Sends HTTP Response
+
+Client → Kestrel → Middleware → Routing → Auth → Authorization → Model Binding → Filters → Controller → Response → Client
+
+12. Did you work on Custom middleware?
+Yes, Custom middleware is code that:
+
+Executes on every request
+Runs before and after the next component
+Handles cross-cutting concerns
+
+Example 1: Global Exception Handling Middleware
+Example 2: Request & Response Logging
+Example 3: Custom Header Validation
+Example 4: Tenant / Correlation ID Middleware
+Yes, I have implemented custom middleware in ASP.NET Core. I mainly used it for global exception handling, request–response logging, 
+and validating custom headers. Middleware helped me centralize cross-cutting concerns instead of duplicating logic in controllers. 
+It runs early in the request pipeline and improves maintainability, observability, and consistency across APIs
+
+13. What different types of Rest APIs did you know and use?
+1. CRUD-Based REST APIs (Most Common)
+APIs that map HTTP verbs to database operations.
+| Operation | HTTP Verb   | Example        |
+| --------- | ----------- | -------------- |
+| Create    | POST        | `/api/users`   |
+| Read      | GET         | `/api/users/1` |
+| Update    | PUT / PATCH | `/api/users/1` |
+| Delete    | DELETE      | `/api/users/1` |
+2. Resource-Oriented APIs : API is designed around resources, not actions.
+/users/{id}
+3. Stateless REST APIs : Server does not store client session, Every request contains authentication info (JWT)
+4. Secured REST APIs : APIs protected using JWT, OAuth 2.0, Role & policy-based authorization
+5. Versioned REST APIs : Backward compatibility, Safe evolution of APIs
+/api/v1/users
+/api/v2/users
+6. Async / High-Performance REST APIs : Uses async/await, Non-blocking I/O
+7. Idempotent REST APIs : Multiple identical requests produce same result.
+Used in:
+PUT
+DELETE
+
+Example:
+Calling DELETE multiple times → same final state.
+8. REST APIs with Pagination, Filtering & Sorting :
+GET /api/users?page=1&pageSize=20&sort=name
+
+I have worked with multiple types of REST APIs including CRUD-based, resource-oriented, stateless, secured, and versioned APIs. 
+Most of the APIs I built were JWT-secured, async, and followed REST best practices like proper HTTP verbs, idempotency, pagination, and versioning. 
+I have also handled internal APIs for microservices and external APIs for client applications.
+
+14. If you want to pass data from 1 middleware to other middleware how do you do it?
+HttpContext
+Why HttpContext.Items?
+
+Per-request storage
+Thread-safe
+Automatically cleared after request
+Designed exactly for this purpose
+
+To pass data from one middleware to another, I use HttpContext.Items. It provides per-request storage that is shared across the middleware pipeline.
+ One middleware can store data in HttpContext.Items, and downstream middleware can read it. Since the same HttpContext flows through the pipeline, 
+ this approach is thread-safe and commonly used for correlation IDs, tenant information, and logging.
+ 
+15. How will you make a service available to the controller?
+In ASP.NET Core, controllers do not create objects directly.
+
+Instead:
+
+Services are registered in the DI container, Controllers request them via constructor injection
+
+This is called Dependency Injection.
+
+| Lifetime  | When to Use            |
+| --------- | ---------------------- |
+| Singleton | Config, cache          |
+| Scoped    | DB, business services  |
+| Transient | Lightweight, stateless |
+
+
+In ASP.NET Core, I make a service available to a controller using dependency injection. 
+I register the service in the built-in DI container with an appropriate lifetime and inject it into the controller via constructor injection.
+This approach promotes loose coupling, testability, and clean architecture.
+
+16. Lifetime of a service with in a core?
+Service Lifetimes (VERY IMPORTANT 🔥)
+1. Transient
+services.AddTransient<IService, Service>();
+
+New instance every time
+Lightweight, stateless services
+
+2. Scoped (Most Used in Web Apps)
+services.AddScoped<IService, Service>();
+
+One instance per HTTP request
+Perfect for DB contexts
+
+📌 DbContext should always be Scoped
+
+3. Singleton
+services.AddSingleton<IService, Service>();
+
+Single instance for entire app
+Shared across requests
+⚠️ Must be thread-safe
+
+| Lifetime  | Instance        |
+| --------- | --------------- |
+| Transient | Every injection |
+| Scoped    | Per request     |
+| Singleton | Per application |
+

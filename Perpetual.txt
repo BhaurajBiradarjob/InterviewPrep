@@ -1,0 +1,93 @@
+.Net Core 
+Design Patterns(CQRS, Signgleton, Factory)
+Microservise Architecture
+
+LINQ(Must)
+EntityFramework 8 and above
+Unit Test Frameworks/TDD(x-Unit)
+
+Exception handling,
+Logging,
+Authentication
+Authorization(Role based authorization)
+Third party API integration and sandbox testing. 
+How to Secure Your Application?
+How to Improve Application Performance?
+How to increase performance of application(what are the points to be considered while implementing code in terms of performance increment)?
+Complex procs implementation(avoid dead locks, performance,..etc)?
+Handling Email sending to clients?
+Any tools used for code quality check?
+Any Entity Level Security implementation done in your project?
+How do you configure Infra(IaC) in you project?
+
+ 
+UI - Angular 11 and above
+
+
+Asp .Net core pipeline - How it works?
+Have you written any middleware?
+What is the advantage of Glabal middleware?
+Dependency Injection in ASP .Net core
+What is the cluster index
+
+2.   How would you document your APIs? 
+3.   Any issues implementing JWT tolens?
+4.   What is the cycle of API request
+5.   Did you work on Custom middleware?
+6.   What different types of Rest APIs did you know and use?
+7.   If you want to pass data from 1 middleware to other middleware how do you do it?
+8.   How will you make a service available to the controller?
+9.   Lifetime of a service with in a core
+10.In DI, what are Add singleton, add transient and add scoped?
+11.In Add transient how many services created
+12.Which Solid principles did you use?
+Explain use case in which you used and how it helped?
+
+13.Explain me asynchronous programming and benefits
+example of / scenario of using Async
+
+14.If API has 3 waits - what doesn't it mean? How does it work
+Instead of above if you use 3 tasks vs When.all - what it is the advantage?
+
+15.EF Core - performance improvements?
+16.configuration parameters - using Ci/Cd or others - How do you do it?
+
+17.Do you use AzureKeyVault,
+18.Questions on ADF and service bus
+19.Are you familiar with CQRS pattern?
+where you have used in your development?
+
+20.difference between irequest and inotification
+21.How do you do mapping of a class to the DB?
+22.EF how do you debug
+23.Azure Service Bus - What is Topic and Queue?
+24.What is Lazy loading?
+25.What is iqueryable and inumerable?
+26.How do push ver 1 to ver 2 Schema changes and Model changes ro the release?
+27.What are benefits and Disadvantages of Entity Framework
+
+What are standalone components
+What are Components and Directives?
+How do make an Angular Component Singleton?
+1.   Explain the Structure of the application you have recently worked on.
+(What different layers are there, How it is constructed)
+28.Different between const var and let let
+29.reactive forms and template driven forms - What is preferred and Why?
+30.What are Gaurds in Angular?
+31.HTTP Interceptors?
+32.Pipes
+33.Filters
+
+
+
+API (incl RESTful, Az Functions, Logic Apps, Service Bus)
+Azure Fundamentals(Key Vault, Secrets, Blob storage, App Registrations, Key rotations, App Insights, App Services, Monitoring, health checks for API's)
+Azure Service Bus, Event Grid
+Azure App Configuration(Feature Manager)
+CI/CD (Pipelines, yml scripting)
+Azure SQL (Backend, experience in profiler usage)
+AI tools(Git Copilot,...,etc. atleast one must)
+ADF(Nice to have)
+Cosmos DB(Nice to have)
+Nice to have experience in SFTP Storage(Azure Blob Storage with SFTP)
+

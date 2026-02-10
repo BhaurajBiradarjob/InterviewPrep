@@ -1,0 +1,895 @@
+What are HTTP Status Codes?
+When a client (browser, Postman, Angular app) sends a request to a server,
+the server responds with a status code to tell what happened.
+📌 Status codes are 3-digit numbers
+📌 First digit tells the category
+
+| Range   | Meaning       | Simple words                   |
+| ------- | ------------- | ------------------------------ |
+| **1xx** | Informational | “Request received, processing” |
+| **2xx** | Success       | “Everything is OK”             |
+| **3xx** | Redirection   | “Go somewhere else”            |
+| **4xx** | Client Error  | “You did something wrong”      |
+| **5xx** | Server Error  | “Server messed up”             |
+
+What are HTTP Verbs?
+
+HTTP verbs (methods) define what action you want to perform on a resource.
+🔑 Most Important HTTP Verbs
+| Verb       | Purpose          | Meaning             |
+| ---------- | ---------------- | ------------------- |
+| **GET**    | Read             | Fetch data          |
+| **POST**   | Create           | Add new data        |
+| **PUT**    | Update (full)    | Replace data        |
+| **PATCH**  | Update (partial) | Modify part of data |
+| **DELETE** | Delete           | Remove data         |
+
+Idempotent → Same result on multiple calls
+
+What is CORS?
+CORS = Cross-Origin Resource Sharing
+It’s a browser security rule that controls:
+“Can a web app from one origin access resources from another origin?”
+
+📌 Important:
+CORS is enforced by the browser, not the server
+
+What is an Origin?
+
+An origin = protocol + domain + port
+https://localhost:4200
+| Part     | Value     |
+| -------- | --------- |
+| Protocol | https     |
+| Domain   | localhost |
+| Port     | 4200      |
+
+Why CORS Exists?
+To protect users from malicious websites.
+
+Without CORS:
+Any website could call your bank APIs
+Steal cookies, tokens, user data 😱
+So browser says:
+
+“I’ll ask the server if this cross-origin call is allowed.”
+
+How CORS Works (High Level) : 
+Browser sends request
+Browser checks:
+Is this cross-origin?
+If yes:
+     Apply CORS rules
+     If server allows → 
+	     request succeeds
+     If not →
+         browser blocks response
+
+📌 Server may process the request
+📌 But browser blocks access to response
+
+Q1. What is a RESTful API?
+Answer:
+A RESTful API follows REST principles and uses HTTP methods like GET, POST, PUT, DELETE to perform operations on resources identified by URLs.
+
+Q2. Difference between PUT and POST?
+Answer:
+POST → Create new resource
+PUT → Update or replace existing resource (idempotent)
+
+Q37. How do you secure APIs?
+👉 API Management + Azure AD + Key Vault
+
+Q1. What is ASP.NET Web API?
+Answer:
+ASP.NET Web API is a framework for building RESTful HTTP services that can be consumed by clients like browsers, mobile apps, or other services.
+
+Q2. Web API vs MVC?
+Answer:
+Web API → Builds REST APIs, returns JSON/XML
+MVC → Builds web pages (Views)
+
+Q3. What is REST?
+Answer:
+REST is an architectural style using stateless communication, resource-based URLs, and HTTP verbs.
+
+Q4. What are HTTP verbs?
+Answer:
+GET, POST, PUT, PATCH, DELETE
+
+Q5. PUT vs PATCH?
+Answer:
+PUT → Full update
+PATCH → Partial update
+
+🔹 Routing
+Q6. Attribute routing vs conventional routing?
+Answer:
+Attribute routing → Routes defined on controller/actions
+Conventional routing → Centralized routing
+
+Q7. How do you version Web APIs?
+Answer:
+URL versioning (/api/v1/users)
+Header versioning
+
+Query string versioning
+
+Q8. What is API versioning best practice?
+Answer:
+Use URL or header-based versioning with backward compatibility.
+
+🔹 Controllers & Actions
+Q9. What is ApiController attribute?
+Answer:
+Enables automatic model validation, binding, and 400 responses.
+
+Q10. What is IActionResult?
+Answer:
+Represents various HTTP responses like Ok(), NotFound(), BadRequest().
+
+Q11. When to use ActionResult<T>?
+Answer:
+When returning both data + HTTP status codes.
+
+🔹 Model Binding & Validation
+Q12. What is model binding?
+Answer:
+Maps HTTP request data to action method parameters.
+
+Q13. Model validation?
+Answer:
+Uses data annotations like [Required], [StringLength].
+
+Q14. How do you handle validation errors?
+Answer:
+Automatically via [ApiController] or manually checking ModelState.
+
+🔹 Filters & Middleware
+Q15. What is middleware?
+Answer:
+Software components that handle requests/responses in a pipeline.
+
+Q16. Filters vs Middleware?
+Answer:
+Middleware → Cross-cutting, pipeline-level
+Filters → Controller/action-level
+
+Q17. Types of filters?
+Answer:
+Authorization, Action, Result, Exception filters
+
+🔹 Dependency Injection
+Q18. What is Dependency Injection?
+Answer:
+Technique to inject dependencies instead of creating them directly.
+
+Q19. Service lifetimes?
+Answer:
+Singleton
+Scoped
+Transient
+
+Q20. Scoped vs Singleton?
+
+Answer:
+Scoped → per request
+Singleton → application lifetime
+
+🔹 Authentication & Authorization
+Q21. How do you secure Web APIs?
+Answer:
+Using JWT tokens, OAuth, Azure AD.
+
+Q22. What is JWT?
+Answer:
+JSON Web Token used for stateless authentication.
+
+Q23. Authentication vs Authorization?
+Answer:
+Authentication → Who you are
+Authorization → What you can access
+
+🔹 Exception Handling & Logging
+Q24. How do you handle exceptions?
+Answer:
+Global exception middleware
+
+Exception filters
+
+Q25. How do you log errors?
+Answer:
+ILogger, Application Insights, Serilog
+
+🔹 Performance & Caching
+Q26. How do you improve API performance?
+Answer:
+Caching
+Async programming
+Pagination
+Compression
+
+Q27. What is response caching?
+Answer:
+Stores responses to avoid repeated processing.
+
+Q28. What is pagination?
+Answer:
+Breaking large data into pages using skip/take.
+
+🔹 Async Programming
+Q29. Why async/await?
+Answer:
+Improves scalability by freeing threads during I/O operations.
+
+Q30. Common async mistakes?
+Answer:
+Blocking async code
+Not awaiting tasks
+Deadlocks
+
+🔹 Swagger / OpenAPI
+Q31. What is Swagger?
+Answer:
+Auto-generated API documentation and testing UI.
+
+Q32. Why Swagger is important?
+Answer:
+Documentation, testing, client integration.
+
+🔹 Database & EF Core
+Q33. EF Core vs Dapper?
+Answer:
+EF Core → ORM, productivity
+Dapper → Micro-ORM, performance
+
+Q34. Tracking vs NoTracking?
+
+Answer:
+NoTracking improves read performance.
+
+🔹 Real-World Scenarios
+Q35. How do you handle long-running tasks?
+👉 Background services / Azure Functions / Service Bus
+
+Q36. How do you handle concurrency?
+👉 Row versioning, optimistic locking
+
+Q37. How do you handle file uploads?
+👉 Multipart/form-data with Blob Storage
+
+Q38. How do you secure secrets?
+👉 Azure Key Vault + Managed Identity
+
+Q39. How do you add health checks?
+👉 AddHealthChecks() + endpoints
+
+Q40. How do you rate-limit APIs?
+👉 API Management / middleware
+
+
+Singleton : Singleton lifetime services are created the first time when they are requested and then every subsequent request will use the same instance
+Scoped :  are created once per request
+Transient : are created each time when they are requested
+
+Media type formatters : converts object to json or xml format(client requested format) which is requested by client
+
+Secure ASP.Net web API
+A secure API ensures:
+    Only trusted clients can call it
+    Only authorized users can access data
+    Data is protected in transit
+    Attacks are blocked or minimized
+    Activity is logged and monitored
+
+Basic Security Concepts
+1. HTTPS (Must-Have) : Always use HTTPS.
+Why?
+Encrypts data
+Protects tokens, passwords
+Prevents MITM attacks
+
+app.UseHttpsRedirection();
+📌 Without HTTPS → API is not secure, no matter what else you do.
+
+2. Input Validation : Never trust user input.
+public class LoginRequest
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
+}
+if (!ModelState.IsValid)
+    return BadRequest(ModelState);
+
+Prevents:
+SQL Injection
+Invalid data crashes
+
+3. Authentication : Authentication proves identity.
+| Method           | Used When        |
+| ---------------- | ---------------- |
+| JWT Bearer Token | Most common      |
+| OAuth 2.0        | External login   |
+| API Keys         | Server-to-server |
+| Cookies          | Browser apps     |
+
+JWT Authentication (Most Used)
+Flow:
+
+User logs in
+API generates JWT
+Client stores token
+Client sends token in header
+API validates token
+
+4. Authorization – What Can You Access? : Authorization controls permissions.
+
+Role-Based Authorization
+[Authorize(Roles = "Admin")]
+public IActionResult DeleteUser()
+
+5. CORS – Who Can Call Your API? 📌 CORS protects browser clients
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        policy =>
+            policy.WithOrigins("http://localhost:4200")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod());
+});
+
+6. Protect Secrets & Config (VERY IMPORTANT)
+Never hardcode secrets ❌
+Use Secure Storage
+| Environment | Use              |
+| ----------- | ---------------- |
+| Local       | User Secrets     |
+| Azure       | Key Vault        |
+| CI/CD       | Pipeline secrets |
+builder.Configuration["Jwt:Key"];
+
+7. Prevent Common Attacks
+SQL Injection
+
+✔ Use Entity Framework
+✔ Use parameterized queries
+
+Brute Force Protection
+Login attempt limits
+CAPTCHA
+Account lockout
+
+8. Rate Limiting (IMPORTANT)
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed",
+        opt =>
+        {
+            opt.Window = TimeSpan.FromMinutes(1);
+            opt.PermitLimit = 100;
+        });
+});
+
+Prevents:
+
+DDoS
+Abuse
+
+9. Logging & Monitoring
+Log Security Events
+
+Failed logins
+Token validation failures
+Unauthorized access
+
+logger.LogWarning("Unauthorized access attempt");
+
+Use App Insights / ELK / Logstash
+
+Track:
+401 / 403 spikes
+Suspicious IPs
+Latency
+
+10. API Design Security Best Practices
+
+✔ Least privilege
+✔ Version APIs
+✔ Hide internal errors
+✔ Use correct HTTP status codes
+✔ Validate request size
+
+return StatusCode(500, "Something went wrong");
+❌ Do not expose stack traces
+
+11. Enterprise Security
+OAuth 2.0 + OpenID Connect
+Used with:
+Azure Entra ID
+IdentityServer
+Auth0
+
+Flow:
+Token issued by Identity Provider
+API trusts issuer
+Think in layers, not one feature.
+
+12. Managed Identity (Azure)
+
+No secrets
+Secure service-to-service auth
+
+13. mTLS (Advanced)
+Client certificate authentication
+Used in banking, healthcare
+
+| Layer          | Purpose          |
+| -------------- | ---------------- |
+| HTTPS          | Encrypt data     |
+| Authentication | Who you are      |
+| Authorization  | What you can do  |
+| CORS           | Who can call     |
+| Validation     | Input safety     |
+| Rate limiting  | Abuse prevention |
+| Secrets mgmt   | Protect keys     |
+| Monitoring     | Detect attacks   |
+
+
+Kestrel Server : 
+what problem does Kestrel solve? 
+When a client (browser, mobile app, Postman) sends an HTTP request, something must listen on a port, accept that request, and pass it to your app.
+That “something” is a web server.
+
+👉 In ASP.NET Core, that web server is Kestrel.
+
+What is Kestrel Server?
+Kestrel is a cross-platform, high-performance web server built into ASP.NET Core.
+Written in C#
+Part of ASP.NET Core
+Listens for HTTP requests
+Handles HTTP/1.1, HTTP/2, HTTP/3
+Works on Windows, Linux, macOS
+
+Q1: Is Kestrel mandatory in ASP.NET Core?
+✅ Yes, ASP.NET Core always runs on Kestrel (directly or behind proxy).
+
+Q2: Can Kestrel replace IIS?
+➡️ Partially
+For containers & Linux → yes
+For Windows auth & enterprise hosting → IIS still useful
+
+Q3: Is Kestrel secure?
+
+✅ Yes, but:
+Should be behind a reverse proxy for public apps
+HTTPS + headers handled better by proxy
+
+Different asp.net web api classes
+Controller class : handles incoming http requests.
+Model class : represents data
+service class : performs business operations, data manipulation, validation
+Middleware : handles request and responses in asp.net pipelines
+Repository : handles data access operations
+Configuration class : application specific config
+Exception class: custom exceptions
+
+Middleware : Middleware is a piece of code that runs on every HTTP request and response.
+
+It can:
+Inspect the request
+Modify the request
+Pass it forward
+Inspect/modify the response
+Short-circuit the pipeline
+
+Client
+ ↓
+Middleware 1
+ ↓
+Middleware 2
+ ↓
+Middleware 3
+ ↓
+Endpoint (Controller / Minimal API)
+ ↑
+Middleware 3
+ ↑
+Middleware 2
+ ↑
+Middleware 1
+ ↑
+Response to Client
+
+🔁 Middleware runs twice:
+On the way in (request)
+On the way out (response)
+
+3. Why Middleware Exists
+
+Without middleware:
+Every controller would handle:
+
+Authentication
+Logging
+Error handling
+CORS
+Security headers
+
+👉 Massive duplication ❌
+
+Middleware solves this by handling cross-cutting concerns centrally.
+
+4. Built-in Middleware
+ASP.NET Core gives many middleware out of the box:
+| Middleware              | Purpose                 |
+| ----------------------- | ----------------------- |
+| `UseRouting()`          | Matches URL to endpoint |
+| `UseAuthentication()`   | Identifies user         |
+| `UseAuthorization()`    | Checks permissions      |
+| `UseCors()`             | Handles CORS            |
+| `UseExceptionHandler()` | Global error handling   |
+| `UseHttpsRedirection()` | Redirect HTTP → HTTPS   |
+| `UseStaticFiles()`      | Serve CSS/JS/images     |
+
+Typical correct order
+app.UseExceptionHandler();
+app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseCors();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+5. Use -> Can pass request to next middleware
+app.Use(async (context, next) =>
+{
+    // before
+    await next();
+    // after
+});
+
+6. Run -> Terminal middleware, Stops pipeline
+app.Run(async context =>
+{
+    await context.Response.WriteAsync("Hello");
+});
+Anything after Run ❌ will never execute.
+
+7. Map -> Branches pipeline by path
+app.Map("/admin", adminApp =>
+{
+    adminApp.Run(async context =>
+    {
+        await context.Response.WriteAsync("Admin area");
+    });
+});
+
+📌 Use middleware for:
+
+Auth
+Logging
+Exception handling
+
+Q1: Does middleware execute in order?
+✅ Yes, order defined in Program.cs
+
+Q2: Can middleware modify response?
+✅ Yes, after await next()
+
+Q3: Can middleware skip controllers?
+✅ Yes, via short-circuiting
+
+Q4: Can we inject services into middleware?
+✅ Yes, via constructor DI
+
+What is Logging?
+Logging means recording what your application is doing at runtime.
+
+You log things like:
+
+Requests coming in
+Errors/exceptions
+Warnings
+Important business events
+Performance issues
+
+Why Logging is CRITICAL in Web APIs
+
+Without logging:
+Bugs are invisible ❌
+Production issues are impossible to debug ❌
+Support teams panic ❌
+
+With logging:
+You know what failed
+When it failed
+Why it failed
+Which request/user caused it
+
+Built-in Logging in ASP.NET Core
+ASP.NET Core has logging built-in by default 🎉
+
+It uses:
+ILogger<T>
+Logging Providers
+Log Levels
+
+No extra setup needed initially.
+
+public class WeatherController : ControllerBase
+{
+    private readonly ILogger<WeatherController> _logger;
+
+    public WeatherController(ILogger<WeatherController> logger)
+    {
+        _logger = logger;
+    }
+
+    [HttpGet]
+    public IActionResult Get()
+    {
+        _logger.LogInformation("Weather API called");
+        return Ok();
+    }
+}
+
+Log Level
+
+| Level           | When to use                 |
+| --------------- | --------------------------- |
+| **Trace**       | Very detailed, step-by-step |
+| **Debug**       | Development debugging       |
+| **Information** | Normal app flow             |
+| **Warning**     | Unexpected but handled      |
+| **Error**       | Failure, but app continues  |
+| **Critical**    | App crash / system failure  |
+
+_logger.LogWarning("Invalid input received");
+_logger.LogError(ex, "Database connection failed");
+
+Logging Configuration (appsettings.json)
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
+
+| Provider             | Usage         |
+| -------------------- | ------------- |
+| Console              | Development   |
+| Debug                | Visual Studio |
+| EventLog             | Windows       |
+| File                 | Production    |
+| Application Insights | Azure         |
+| Serilog / NLog       | Advanced      |
+
+
+✅ Do
+
+Log once, not everywhere
+Use structured logging
+Log context (RequestId, UserId)
+Use correct log levels
+Centralize logs (App Insights)
+
+❌ Don’t
+
+Log sensitive data (passwords, tokens)
+Over-log (performance hit)
+Use Console.WriteLine
+Catch exceptions only to log and ignore
+
+Q1: Is logging synchronous?
+❌ No, it’s asynchronous (non-blocking)
+
+Q2: Should controllers log errors?
+⚠️ No — let exception middleware log errors
+
+Q3: Difference between logging and tracing?
+Logging → Events
+Tracing → Request flow across services
+
+What is an Exception?
+An exception is an error that occurs while your application is running.
+
+Examples:
+
+Database connection failed
+Null reference
+Divide by zero
+Invalid input
+External API timeout
+
+If not handled → app crashes or returns ugly errors ❌
+
+Why Exception Handling is IMPORTANT
+
+Without proper handling:
+App crashes ❌
+Client gets stack traces ❌
+Security risk ❌
+Debugging becomes nightmare ❌
+
+With proper handling:
+App stays alive ✅
+Client gets clean error response ✅
+Errors are logged properly ✅
+
+Naive Approach: try–catch everywhere
+
+[HttpGet]
+public IActionResult Get()
+{
+    try
+    {
+        var data = service.GetData();
+        return Ok(data);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, ex.Message);
+    }
+}
+Why this is BAD ❌
+
+Duplicate code
+Controllers become messy
+No centralized handling
+Easy to forget logging
+
+👉 Not scalable
+
+Correct Way: Centralized Exception Handling (Key idea 🔑)
+
+Exceptions should be handled in ONE place, not everywhere.
+
+ASP.NET Core gives 3 main ways:
+Exception Handling Middleware ✅ (BEST)
+Exception Filters
+Developer Exception Page (Dev only)
+
+Exception Handling Middleware (Most important 🔥)
+Why middleware is best?
+
+Catches all unhandled exceptions
+Centralized
+Clean controllers
+Works for entire pipeline
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+
+        await context.Response.WriteAsync(
+            "{\"error\":\"Something went wrong\"}"
+        );
+    });
+});
+📌 Must be registered early in pipeline.
+
+Exception Handling + Logging (Real-world)
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var logger = context.RequestServices
+            .GetRequiredService<ILogger<Program>>();
+
+        var exception = context.Features
+            .Get<IExceptionHandlerFeature>()?.Error;
+
+        logger.LogError(exception, "Unhandled exception");
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsJsonAsync(new
+        {
+            Message = "Internal Server Error"
+        });
+    });
+});
+👉 Client sees safe message
+👉 Logs contain real exception
+
+HTTP Status Codes for Exceptions (Very important)
+
+| Scenario              | Status Code     |
+| --------------------- | --------------- |
+| Validation error      | 400 Bad Request |
+| Unauthorized          | 401             |
+| Forbidden             | 403             |
+| Not found             | 404             |
+| Business rule failure | 409 Conflict    |
+| Server error          | 500             |
+
+Why custom exceptions?
+Separate business errors from system errors
+Clean error mapping
+
+Q1: Middleware vs Exception Filter?
+Middleware → whole pipeline ✅
+Filter → MVC only ❌
+
+Q2: Where should exceptions be logged?
+👉 Global exception middleware
+
+Q3: Should services throw exceptions?
+✅ Yes, don’t swallow them
+
+
+
+
+
+
+
+🔹 Interview One-liners (Memorize 🔥)
+
+Web API → RESTful HTTP services
+
+Middleware → Request pipeline
+
+JWT → Stateless auth
+
+DI → Loose coupling
+
+Async → Scalability
+
+If you want next:
+
+Advanced Web API coding questions
+
+System design using Web API
+
+Common Web API mistakes
+
+Mock ASP.NET Web API interview
+
+
+
+MVC
+Model
+What it does:
+Represents data and business logic
+Talks to the database
+Applies rules (validations, calculations)
+
+View
+What it does:
+Responsible for UI (User Interface)
+Displays data to the user
+No business logic
+
+Controller
+What it does:
+Acts as a middleman
+Handles user requests
+Fetches data from Model
+Sends data to View
+
+How MVC Works (Flow)
+
+User opens a URL
+Controller receives the request
+Controller gets data from Model
+Controller sends data to View
+View displays it to the user
+
+📌 Flow:
+User → Controller → Model → Controller → View → User
+
+✅ Advantages of MVC
+Clean separation of concerns
+Easy to maintain and test
+Multiple views can use the same model
+Great for large applications

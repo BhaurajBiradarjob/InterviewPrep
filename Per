@@ -33,7 +33,7 @@ If invalid:
 11. Response Travels Back Through Middleware
 12. Server Sends HTTP Response
 
-Client → Kestrel → Middleware → Routing → Auth → Authorization → Model Binding → Filters → Controller → Response → Client
+Client → Kestrel → Middleware → Routing → Auth → Authorization → Model Binding -> Model Validation → Filters → Controller → Response → Client
 
 2. Have you written any middleware?
 Yes, I have written custom middleware in ASP.NET Core.
@@ -966,3 +966,333 @@ Shared across requests
 | Scoped    | Per request     |
 | Singleton | Per application |
 
+17. How to Optimize Performance of ASP.NET Web API
+
+Performance optimization happens at multiple layers:
+
+Application level
+Database level
+Infrastructure level
+Network level
+
+1. Use Asynchronous Programming
+Why?
+
+Frees thread while waiting for I/O
+Handles more concurrent requests
+Improves scalability
+
+🚨 Never block threads:
+.Result
+.Wait()
+
+2. Optimize Database Queries
+✅ Use Proper Indexing
+
+Clustered index on primary key
+Non-clustered indexes on frequently filtered columns
+
+✅ Select Only Required Columns
+
+✅ Use AsNoTracking() for Read-Only Queries
+
+✅ Avoid N+1 Queries
+
+✅ Use Include:
+
+3. Enable Caching (Huge Performance Boost 🚀)
+✅ In-Memory Cache : IMemoryCache
+
+✅ Distributed Cache : Redis, SQL Server cache
+
+✅ Response Caching : [ResponseCache(Duration = 60)]
+
+✅ Output Caching (.NET 7+) : app.UseOutputCache();
+
+4. Use Pagination
+❌ Never return 100,000 records.
+
+.Skip((page - 1) * pageSize)
+.Take(pageSize)
+
+Reduces:
+
+Memory usage
+Network load
+Database load
+
+5. Enable Compression
+builder.Services.AddResponseCompression();
+Reduces response size → faster API
+
+6. Use Connection Pooling
+
+Built-in with SQL Server.
+
+Avoid:
+Opening/closing connections manually
+Creating DbContext manually
+Use DI.
+
+7. Use Rate Limiting
+
+Prevents overload:
+
+builder.Services.AddRateLimiter();
+
+8. Minimize Middleware
+
+Too many middleware = slower pipeline.
+
+9. Use Background Services for Heavy Work
+
+Move heavy processing to:
+
+Azure Service Bus
+RabbitMQ
+Hangfire
+BackgroundService
+
+Never block API request for heavy work.
+
+10. Use Profiling Tools
+
+Application Insights
+MiniProfiler
+SQL Profiler
+dotTrace
+BenchmarkDotNet
+Measure before optimizing.
+
+18. What is Caching?
+Caching means storing frequently used data temporarily so we don’t fetch it again and again from the original source (like a database).
+
+👉 Instead of:
+Client → API → Database (every time ❌)
+
+We do:
+Client → API → Cache (fast ✅)
+                ↓
+              Database (only first time)
+
+Why Do We Need Caching?
+
+Without caching:
+
+Database gets overloaded
+API becomes slow
+More CPU & memory usage
+Poor scalability
+
+With caching:
+
+Faster response
+Reduced DB load
+Better user experience
+Lower infrastructure cost
+
+Real-Life Example
+
+Imagine:
+
+10,000 users request product list
+
+Same data for everyone
+
+Without cache:
+→ 10,000 DB calls
+
+With cache:
+→ 1 DB call
+→ 9,999 served from memory 🚀
+
+Types of Caching in ASP.NET Core
+
+1. In-Memory Cache (IMemoryCache)
+Stored in: Server RAM
+
+Best for:
+
+Single server apps
+Small-medium systems
+
+public class ProductService
+{
+    private readonly IMemoryCache _cache;
+    private readonly AppDbContext _context;
+
+    public ProductService(IMemoryCache cache, AppDbContext context)
+    {
+        _cache = cache;
+        _context = context;
+    }
+
+    public async Task<List<Product>> GetProducts()
+    {
+        if (!_cache.TryGetValue("products", out List<Product> products))
+        {
+            products = await _context.Products.ToListAsync();
+
+            _cache.Set("products", products,
+                TimeSpan.FromMinutes(5));
+        }
+
+        return products;
+    }
+}
+Pros
+
+✔ Very fast
+✔ Easy to implement
+
+Cons
+
+❌ Not shared across multiple servers
+❌ Data lost when app restarts
+
+2. Distributed Cache (Redis, SQL, etc.)
+
+Stored in: External cache server (Redis)
+
+Best for:
+
+Microservices
+Load-balanced systems
+Cloud apps
+
+Why Redis?
+
+Extremely fast
+Shared across multiple instances
+
+3. Response Caching
+
+Caches full HTTP response.
+[ResponseCache(Duration = 60)]
+Good for:
+
+GET endpoints
+Public data
+
+4. Output Caching (.NET 7+)
+
+Modern version of response caching.
+
+builder.Services.AddOutputCache();
+app.UseOutputCache();
+
+Cache Expiration Strategies
+🔸 Absolute Expiration
+Expires after fixed time.
+TimeSpan.FromMinutes(5)
+
+🔸 Sliding Expiration
+Resets timer on each access.
+options.SetSlidingExpiration(TimeSpan.FromMinutes(5));
+
+| Strategy      | Meaning                      |
+| ------------- | ---------------------------- |
+| Cache Aside   | App checks cache first       |
+| Write Through | Update DB + Cache together   |
+| Write Back    | Update cache first, DB later |
+
+When NOT to Use Cache
+
+❌ Frequently changing data
+❌ Highly personalized data
+❌ Sensitive data
+
+18. What is Rate Limiting?
+Rate limiting restricts how many requests a client can make in a specific time period.
+
+Example:
+
+100 requests per minute per user
+
+Why Do We Need Rate Limiting?
+
+Without rate limiting:
+
+API abuse
+DDoS attacks
+Server overload
+Increased cloud cost
+
+With rate limiting:
+
+Fair usage
+System protection
+Stable performance
+
+Real-World Example
+
+Imagine:
+
+1 user sends 10,000 requests per second
+
+Without rate limiting:
+→ Server crashes
+
+With rate limiting:
+→ Only 100 allowed
+→ Rest blocked with 429 error
+
+Common Rate Limiting Algorithms
+Fixed Window
+
+Example:
+
+100 requests per minute
+
+Resets every minute
+
+Simple but can spike at boundary.
+
+🔹 Sliding Window
+
+More accurate version.
+Counts requests in rolling time window.
+
+Token Bucket (Most Popular)
+
+Tokens are added at fixed rate
+
+Each request consumes 1 token
+If no token → blocked
+Allows bursts but controls average rate.
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", opt =>
+    {
+        opt.PermitLimit = 100;
+        opt.Window = TimeSpan.FromMinutes(1);
+    });
+});
+app.UseRateLimiter();
+[EnableRateLimiting("fixed")]
+public IActionResult Get()
+{
+    return Ok("Hello");
+}
+
+What Happens When Limit Exceeded?
+HTTP 429 - Too Many Requests
+
+Rate Limiting Strategies
+
+Per IP
+Per User
+Per API Key
+Global limit
+Per endpoint
+
+| Feature              | Caching       | Rate Limiting  |
+| -------------------- | ------------- | -------------- |
+| Purpose              | Improve speed | Protect system |
+| Reduces DB load      | Yes           | No             |
+| Controls abuse       | No            | Yes            |
+| Improves scalability | Yes           | Yes            |
+
+Caching improves performance by temporarily storing frequently requested data to reduce database calls. It can be in-memory or distributed like Redis. 
+Rate limiting protects the API by restricting how many requests a client can make within a specific time window, preventing abuse and improving system stability.

@@ -275,9 +275,12 @@ Centralized logging
 Easy monitoring & alerting
 
 We used global middleware for exception handling, logging, authentication, and correlation ID generation. 
-This allowed us to centralize cross-cutting concerns, keep controllers clean, and ensure consistent behavior and error responses across all APIs.
+This allowed us to centralize cross-cutting concerns, keep controllers clean, and ensure consistent behavior and 
+error responses across all APIs.
 
-Global middleware provides centralized, reusable handling of cross-cutting concerns for all requests, improving consistency, performance, and maintainability.
+Global middleware provides centralized, reusable handling of cross-cutting concerns for all requests, improving consistency,
+ performance, and maintainability.
+ performance, and maintainability.
 
 Global middleware is best suited for infrastructure-level concerns, while filters should be used for MVC-specific behavior.
 
@@ -650,7 +653,8 @@ export class ProfileComponent {
 
 
 Angular components cannot be singletons because they are managed by the framework lifecycle. 
-To achieve singleton behavior or shared state, we use a singleton service (providedIn: 'root') and inject it into the component.
+To achieve singleton behavior or shared state, we use a singleton service (providedIn: 'root') and 
+inject it into the component.
 
 What is providedIn?
 providedIn tells Angular where a service should be registered in the Dependency Injection hierarchy.
@@ -731,7 +735,8 @@ A machine-readable API specification
 Auto-generated from code
 Interactive UI to test APIs
 
-I primarily document my APIs using Swagger/OpenAPI in ASP.NET Core because it’s auto-generated, always in sync with code, and easy for consumers to test.
+I primarily document my APIs using Swagger/OpenAPI in ASP.NET Core because it’s auto-generated, always in sync with code, 
+and easy for consumers to test.
 In addition, I maintain a README or Wiki to explain authentication flows, error handling, rate limits, and versioning.
 For collaboration, I also share Postman collections so frontend and QA teams can work independently.
 
@@ -753,10 +758,10 @@ Client silently calls /refresh-token when access token expires
 
 2. Secure Storage of JWT on Client
 
-| Storage              | Risk     | Used When         |
-| -------------------- | -------- | ----------------- |
-| localStorage         | XSS      | Avoid if possible |
-| sessionStorage       | XSS      | Slightly better   |
+| Storage              | Risk      | Used When         |
+| -------------------- | --------  | ----------------- |
+| localStorage         | XSS       | Avoid if possible |
+| sessionStorage       | XSS       | Slightly better   |
 | **HttpOnly Cookies** | ✅ Secure | **Best practice** |
 
 Solution I used:
@@ -869,8 +874,9 @@ Example 1: Global Exception Handling Middleware
 Example 2: Request & Response Logging
 Example 3: Custom Header Validation
 Example 4: Tenant / Correlation ID Middleware
-Yes, I have implemented custom middleware in ASP.NET Core. I mainly used it for global exception handling, request–response logging, 
-and validating custom headers. Middleware helped me centralize cross-cutting concerns instead of duplicating logic in controllers. 
+Yes, I have implemented custom middleware in ASP.NET Core. I mainly used it for global exception handling, 
+request–response logging, and validating custom headers. Middleware helped me centralize cross-cutting concerns instead of 
+duplicating logic in controllers. 
 It runs early in the request pipeline and improves maintainability, observability, and consistency across APIs
 
 13. What different types of Rest APIs did you know and use?
@@ -900,8 +906,9 @@ Calling DELETE multiple times → same final state.
 8. REST APIs with Pagination, Filtering & Sorting :
 GET /api/users?page=1&pageSize=20&sort=name
 
-I have worked with multiple types of REST APIs including CRUD-based, resource-oriented, stateless, secured, and versioned APIs. 
-Most of the APIs I built were JWT-secured, async, and followed REST best practices like proper HTTP verbs, idempotency, pagination, and versioning. 
+I have worked with multiple types of REST APIs including CRUD-based, resource-oriented, stateless, secured, and 
+versioned APIs. Most of the APIs I built were JWT-secured, async, and followed REST best practices like proper HTTP verbs,
+ idempotency, pagination, and versioning. 
 I have also handled internal APIs for microservices and external APIs for client applications.
 
 14. If you want to pass data from 1 middleware to other middleware how do you do it?
@@ -913,8 +920,10 @@ Thread-safe
 Automatically cleared after request
 Designed exactly for this purpose
 
-To pass data from one middleware to another, I use HttpContext.Items. It provides per-request storage that is shared across the middleware pipeline.
- One middleware can store data in HttpContext.Items, and downstream middleware can read it. Since the same HttpContext flows through the pipeline, 
+To pass data from one middleware to another, I use HttpContext.Items. It provides per-request storage that is shared 
+across the middleware pipeline.
+ One middleware can store data in HttpContext.Items, and downstream middleware can read it. 
+ Since the same HttpContext flows through the pipeline, 
  this approach is thread-safe and commonly used for correlation IDs, tenant information, and logging.
  
 15. How will you make a service available to the controller?
@@ -934,7 +943,8 @@ This is called Dependency Injection.
 
 
 In ASP.NET Core, I make a service available to a controller using dependency injection. 
-I register the service in the built-in DI container with an appropriate lifetime and inject it into the controller via constructor injection.
+I register the service in the built-in DI container with an appropriate lifetime and inject it into the controller via 
+constructor injection.
 This approach promotes loose coupling, testability, and clean architecture.
 
 16. Lifetime of a service with in a core?
@@ -1065,7 +1075,8 @@ BenchmarkDotNet
 Measure before optimizing.
 
 18. What is Caching?
-Caching means storing frequently used data temporarily so we don’t fetch it again and again from the original source (like a database).
+Caching means storing frequently used data temporarily so we don’t fetch it again and again 
+from the original source (like a database).
 
 👉 Instead of:
 Client → API → Database (every time ❌)
@@ -1294,5 +1305,259 @@ Per endpoint
 | Controls abuse       | No            | Yes            |
 | Improves scalability | Yes           | Yes            |
 
-Caching improves performance by temporarily storing frequently requested data to reduce database calls. It can be in-memory or distributed like Redis. 
-Rate limiting protects the API by restricting how many requests a client can make within a specific time window, preventing abuse and improving system stability.
+Caching improves performance by temporarily storing frequently requested data to reduce database calls. 
+It can be in-memory or distributed like Redis. 
+Rate limiting protects the API by restricting how many requests a client can make within a specific time window, 
+preventing abuse and improving system stability.
+
+19. What is ngOnInit in Angular?
+
+ngOnInit is a lifecycle hook in Angular that is called once after the component is initialized.
+It runs after Angular sets all input properties and before the view is fully rendered.
+It is mainly used to perform initialization logic like API calls, default data loading, or setup tasks.
+
+| Constructor                    | ngOnInit                                 |
+| ------------------------------ | ---------------------------------------- |
+| Used for dependency injection  | Used for initialization logic            |
+| Called first                   | Called after constructor                 |
+| Should not contain heavy logic | Safe place for API calls                 |
+| Runs when class is created     | Runs after Angular initializes component |
+
+👉 Never call API in constructor.
+👉 Use ngOnInit() for:
+
+Calling REST APIs
+Initializing variables
+Subscribing to services
+Setting default values
+
+OnInit is an interface(contract) which contains ngOnInit method.
+
+20. What is selector and Template?
+A selector is used to identify each component uniquely in the component tree
+
+
+A template defines the HTML view of a component.
+It controls:
+
+UI structure
+Data binding
+Directives
+Event binding
+
+Two Ways to Define Template
+1. Inline Template
+@Component({
+  selector: 'app-employee',
+  template: `
+    <h2>{{ name }}</h2>
+    <button (click)="changeName()">Change</button>
+  `
+})
+
+2. External Template (Best Practice)
+@Component({
+  selector: 'app-employee',
+  templateUrl: './employee.component.html'
+})
+
+Then in employee.component.html:
+<h2>{{ name }}</h2>
+<button (click)="changeName()">Change</button>
+
+21. What are Observable and Promise?
+
+Promise : A Promise represents a single future value.
+👉 It is used for asynchronous operations
+👉 It resolves once (success or failure)
+
+let promise = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve("Data received");
+  }, 2000);
+});
+
+promise.then(data => console.log(data));
+
+✔ Executes once
+✔ Returns single value
+✔ Cannot be cancelled
+
+Promise States
+
+Pending
+Fulfilled (resolved)
+Rejected
+
+Observable : An Observable is a stream of values over time.
+👉 It can emit:
+
+Multiple values
+Over a period of time
+Can be cancelled
+Supports operators (map, filter, etc.)
+
+Angular uses RxJS Observables heavily (especially in HttpClient).
+
+import { Observable } from 'rxjs';
+
+let observable = new Observable(observer => {
+  observer.next("First value");
+  observer.next("Second value");
+  observer.complete();
+});
+
+observable.subscribe(data => console.log(data));
+
+✔ Can emit multiple values
+✔ Supports cancellation
+✔ Lazy execution
+
+How Angular Uses Observables
+this.http.get("api/users")
+    .subscribe(data => {
+        console.log(data);
+    });
+Angular’s HttpClient returns Observable, not Promise.
+
+| Feature         | Promise | Observable              |
+| --------------- | ------- | ----------------------- |
+| Values          | Single  | Multiple                |
+| Execution       | Eager   | Lazy                    |
+| Cancelable      | ❌ No   | ✔ Yes (unsubscribe)    |
+| Operators       | Limited | Powerful RxJS operators |
+| Used in Angular | Rarely  | Mostly (HttpClient)     |
+
+Key Interview Differences
+1. Execution
+Promise
+let p = new Promise(...); // Executes immediately
+
+Observable
+let obs = new Observable(...); // Executes only when subscribed
+
+👉 Observable is lazy.
+
+2. Cancellation
+let subscription = observable.subscribe();
+subscription.unsubscribe(); // Stops execution
+
+❌ Promise cannot be cancelled
+
+3. Multiple Values
+Promise:
+resolve("One");
+resolve("Two"); // ignored
+
+Observable:
+observer.next("One");
+observer.next("Two"); // both emitted
+
+| Use Case                   | Choose     |
+| -------------------------- | ---------- |
+| Single async result        | Promise    |
+| API calls in Angular       | Observable |
+| Real-time data (WebSocket) | Observable |
+| Complex async chains       | Observable |
+
+Converting Between Them
+
+
+import { firstValueFrom } from 'rxjs';
+Observable → Promise
+
+let result = await firstValueFrom(this.http.get(...));
+
+A Promise handles a single asynchronous value and executes immediately, 
+while an Observable can emit multiple values over time, supports cancellation, and is lazy.
+Angular prefers Observables because they provide powerful operators and better control over asynchronous streams.
+
+👉 Why Angular HttpClient returns Observable instead of Promise?
+
+Answer:
+
+Supports multiple values
+Supports cancellation
+Works well with RxJS operators
+More powerful for reactive programming
+
+22. What is RxJS?
+RxJS (Reactive Extensions for JavaScript) is a library for reactive programming using Observables.
+
+👉 It helps manage asynchronous data streams like:
+
+HTTP requests
+User input events
+WebSockets
+Timers
+Real-time updates
+
+Angular heavily depends on RxJS.
+
+Reactive programming means: Reacting to data as it arrives over time. 
+
+Core Concepts of RxJS
+1. Observable : A stream of data over time.
+import { of } from 'rxjs';
+
+const obs$ = of(1, 2, 3);
+obs$.subscribe(value => console.log(value));
+
+2. Observer : The object that receives values.
+obs$.subscribe({
+  next: value => console.log(value),
+  error: err => console.log(err),
+  complete: () => console.log("Done")
+});
+
+3. Subscription : Represents execution of Observable.
+const sub = obs$.subscribe();
+sub.unsubscribe();
+
+✔ Important to avoid memory leaks in Angular
+
+Flow:
+
+Observable emits data
+Operators transform data
+Observer receives final result
+
+👉 The Observable produces (or pushes) values
+👉 Those values are sent to the Observer (subscriber)
+👉 The Observer reacts to them
+
+Simple Explanation
+
+Think of an Observable like a YouTube live stream 🎥
+Think of the Observer like a viewer
+
+Stream produces content → Observable
+Viewer watches content → Observer
+Viewer must subscribe → subscribe()
+No subscription = no data flow.
+
+RxJS Operators : Operators are functions that transform data streams.
+
+1. map() : Transforms each value.
+import { map } from 'rxjs/operators';
+
+this.http.get('/users')
+  .pipe(
+    map(data => data['result'])
+  )
+  .subscribe(res => console.log(res));
+
+2. filter() : Filters values.
+import { filter } from 'rxjs/operators';
+
+of(1,2,3,4)
+  .pipe(filter(x => x > 2))
+  .subscribe(console.log);
+
+3. switchMap() : Used in HTTP chaining, Cancels previous request if new one comes.
+✔ Used in search boxes
+✔ Prevents multiple API calls
+
+4. mergeMap() : Runs multiple requests in parallel.
+
+5. tap() : Used for debugging (side effects).

@@ -214,7 +214,8 @@ Q: Where should authentication logic live?
 
 
 What are HTTP Interceptors in Angular?
-HTTP Interceptors are middleware that sit between your Angular app and the server. They allow you to intercept, modify, or handle HTTP requests and responses globally.
+HTTP Interceptors are middleware that sit between your Angular app and the server. They allow you to intercept,
+ modify, or handle HTTP requests and responses globally.
 
 Why Do We Need Interceptors?
 Without interceptors:
@@ -363,7 +364,8 @@ Q: Why async pipe is preferred?
 Q: Can pipes be used in TypeScript?
 ❌ No (template only)
 
-Angular Pipes are template-level data transformers that format, filter, and manage data efficiently, especially with async operations.
+Angular Pipes are template-level data transformers that format, filter, and manage data efficiently, 
+especially with async operations.
 
 🔍 What is “Filter”?
 Filtering means selecting a subset of data based on a condition.
@@ -428,7 +430,9 @@ Q: Where should filtering logic be placed?
 Q: Why avoid filter pipes?
 👉 Performance issues on large lists
 
-Filters mean selecting data based on conditions, and in Angular this is done using component logic, pipes (for display), or backend APIs — not a built-in “filter” feature.
+Filters mean selecting data based on conditions, and 
+in Angular this is done using component logic, pipes (for display), or backend APIs — 
+not a built-in “filter” feature.
 
 29.reactive forms and template driven forms - What is preferred and Why?
 Angular provides two ways to build forms:
@@ -442,7 +446,7 @@ Logic is written mostly in HTML
 Angular creates form model behind the scenes
 Uses ngModel
 
-<form #f="ngForm">
+<form #if="ngForm">
   <input name="email" ngModel required email>
   <button [disabled]="f.invalid">Submit</button>
 </form>
@@ -1549,8 +1553,10 @@ No credentials stored
 Used heavily in production systems.
 
 17.Do you use AzureKeyVault?
-Yes, I use Azure Key Vault to securely manage secrets like connection strings, API keys, and certificates.
- I integrate it with ASP.NET Core using Managed Identity and DefaultAzureCredential, so no secrets are stored in code or pipelines. 
+Yes, I use Azure Key Vault to securely manage secrets like connection strings, API keys, and 
+certificates.
+ I integrate it with ASP.NET Core using Managed Identity and DefaultAzureCredential, so no secrets are 
+ stored in code or pipelines. 
  The application reads secrets from Key Vault through the configuration system, 
  which allows secure access and easy secret rotation without redeploying the application.
  
@@ -1687,7 +1693,8 @@ Team is inexperienced
 1️⃣2️⃣ Real-world usage example (interview-ready)
 
 “We used CQRS in a high-traffic ASP.NET Core API where read operations were much heavier than writes.
-We separated commands and queries to optimize read performance using lightweight DTOs and AsNoTracking, while command handlers focused purely on business logic and validations.”
+We separated commands and queries to optimize read performance using lightweight DTOs and AsNoTracking, 
+while command handlers focused purely on business logic and validations.”
 
 🔥 This answer impresses interviewers.
 
